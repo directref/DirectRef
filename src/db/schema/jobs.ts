@@ -25,9 +25,12 @@ export const jobs = pgTable(
     // Deletion clock: set the moment isActive flips to false, cleared the
     // moment it's reactivated — so re-deactivating later always starts a
     // fresh 30 days. The cleanup sweep (see scheduler/jobCleanupSweep.ts)
-    // emails a 3-day warning, then permanently deletes the posting (and,
-    // via cascade, its applications/messages) once deactivatedAt is 30+
-    // days old. deletionWarningEmailSentAt makes that warning idempotent.
+    // emails a 3-day warning, then permanently deletes the posting once
+    // deactivatedAt is 30+ days old AND no applications are left on it.
+    // Applications are never destroyed with the job — they are erased on
+    // their own clock by scheduler/applicationRetentionSweep.ts (closed +
+    // 30 days inactive). deletionWarningEmailSentAt makes the warning
+    // idempotent.
     deactivatedAt: timestamp('deactivated_at', { withTimezone: true }),
     deletionWarningEmailSentAt: timestamp('deletion_warning_email_sent_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),

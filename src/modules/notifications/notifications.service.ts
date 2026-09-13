@@ -13,12 +13,13 @@ export type NotificationType =
   | 'cv_escalated'             // Clock A Day 2 — stronger reminder to the referrer, with a deadline
   | 'cv_expired'               // Day 5 — application auto-closed with no response (either clock)
   | 'cv_submit_reminder'       // Clock B Day 2 from download — did you submit this internally?
-  | 'cv_submit_followup'       // Clock B Day 3 from download — final reminder
   | 'cv_internally_submitted'  // referrer confirmed they submitted the CV internally
   | 'application_message'
   | 'connection_request'
   | 'connection_accepted'
-  | 'job_deletion_warning';   // inactive job posting will be permanently deleted in 3 days
+  | 'job_deletion_warning'    // inactive job posting will be permanently deleted in 3 days
+  | 'application_erased'      // closed application erased after 30 days of inactivity (retention)
+  | 'referrer_left';          // the referrer deleted their account; the seeker's application went with it
 
 /** Create a notification for a user */
 export async function createNotification(

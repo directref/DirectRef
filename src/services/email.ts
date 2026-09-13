@@ -580,10 +580,11 @@ export async function sendJobDeletionWarningEmail(
       eyebrow('Job posting'),
       badge('Inactive · 3 days left', 'expired'),
       heading('This posting is about to be deleted'),
-      text(`${strong(jobTitle)} at ${strong(companyName)} has been inactive for 27 days. In 3 days it will be ${strong('permanently deleted')} — along with every application, message, and C.V. sent to it.`),
+      text(`${strong(jobTitle)} at ${strong(companyName)} has been inactive for 27 days. In 3 days it will be ${strong('permanently deleted')}.`),
       card('Want to keep it?', [
         'Reactivate the posting any time before then and nothing is lost.',
-        'Once it\'s deleted, there\'s no way to recover it.',
+        'Applications already sent to it are not deleted with it — each one is kept until it closes, then erased after 30 days of inactivity.',
+        'Once the posting is deleted, there\'s no way to recover it.',
       ], 'expired'),
       button(jobsUrl, 'Reactivate this posting'),
     ].join('\n')),
