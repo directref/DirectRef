@@ -26,17 +26,18 @@ export function MarketingFooter() {
         </div>
         <nav className="flex flex-wrap gap-5 text-[13.5px]">
           <Link href="/our-story" style={footerLinkStyle}>Our story</Link>
-          <Link href="/login" style={footerLinkStyle}>Log in</Link>
-          <Link href="/login" style={footerLinkStyle}>Sign up as seeker</Link>
-          <Link href="/login" style={footerLinkStyle}>Sign up as referrer</Link>
+          <Link href="/login" style={footerLinkStyle}>Sign in</Link>
+          <Link href="/register" style={footerLinkStyle}>Create an account</Link>
         </nav>
       </div>
       <div className="flex justify-center gap-5 flex-wrap pb-3.5">
         <Link href="/terms" className="text-[13px]" style={{ color: mkt.textMuted }}>Terms</Link>
         <Link href="/privacy" className="text-[13px]" style={{ color: mkt.textMuted }}>Privacy</Link>
-        <a href="mailto:support@directref.com" className="text-[13px]" style={{ color: mkt.textMuted }}>Contact</a>
+        <a href="mailto:support@direct-ref.com" className="text-[13px]" style={{ color: mkt.textMuted }}>Contact</a>
       </div>
-      <p className="text-center text-[13px] pb-7" style={{ color: mkt.textMuted }}>© 2026 DirectRef.</p>
+      <p className="text-center text-[13px] pb-7" style={{ color: mkt.textMuted }}>
+        DirectRef is in early beta. · © 2026 DirectRef.
+      </p>
     </footer>
   );
 }

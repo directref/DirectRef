@@ -53,7 +53,10 @@ export function RegisterForm() {
     setErrors({});
     setIsLoading(true);
     try {
-      await authApi.register({ ...form, isReferrer: true });
+      // Everyone signs up as one kind of account. Referrer capability is a
+      // consequence of verifying a work email at the company you post for —
+      // never a self-declared checkbox at signup.
+      await authApi.register(form);
 
       // Redeem invite token — auto-connects with inviter
       if (inviteToken) {

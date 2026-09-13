@@ -23,7 +23,7 @@ export function BillingCard() {
       )}
 
       <p className="mt-1.5 text-[13.5px] leading-relaxed" style={{ color: pfx.inkSecondary }}>
-        Each job post costs 1 credit. You received 5 credits when you joined, plus 1 free credit every month.
+        Each job post costs 1 credit. Applying to a role is always free. You received 5 credits when you joined, plus 1 more every month — they never expire, and credits can't currently be bought.
       </p>
 
       {/* Buy credits is disabled — kept for a quick re-enable, not shown. */}
