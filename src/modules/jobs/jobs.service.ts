@@ -10,6 +10,27 @@ import { createNotification } from '../notifications/notifications.service';
 import { env } from '../../config/env';
 import type { CreateJobDto, UpdateJobDto } from './jobs.schemas';
 
+/** PUBLIC — a small sample of live listings for the marketing home page.
+ *  Deliberately narrow: no referrer identity, no job id, no description, no
+ *  bounty. Signed-out visitors see that real roles exist, not a browsable
+ *  board. Returns [] when nothing is live, and the page hides the section. */
+export async function getPublicSample(limit = 4) {
+  return db
+    .select({
+      title: jobs.title,
+      companyName: jobs.companyName,
+      location: jobs.location,
+      jobType: jobs.jobType,
+    })
+    .from(jobs)
+    .where(and(
+      eq(jobs.isActive, true),
+      or(sql`${jobs.expiresAt} IS NULL`, sql`${jobs.expiresAt} > now()`),
+    ))
+    .orderBy(desc(jobs.createdAt))
+    .limit(limit);
+}
+
 type JobRow = typeof jobs.$inferSelect;
 interface ReferrerRow {
   id: string;

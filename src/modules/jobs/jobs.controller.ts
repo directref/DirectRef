@@ -3,6 +3,14 @@ import { asyncHandler } from '../../utils/asyncHandler';
 import * as jobsService from './jobs.service';
 import { parsePagination } from '../../utils/pagination';
 
+/** PUBLIC — the marketing landing page's "roles live right now" teaser.
+ *  Returns an empty array when nothing is live, which is what the page is
+ *  built to expect: the section hides itself rather than showing samples. */
+export const getPublicSample = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await jobsService.getPublicSample();
+  res.json({ data });
+});
+
 export const scrapeJob = asyncHandler(async (req: Request, res: Response) => {
   const data = await jobsService.scrapeJob(req.body.url);
   res.json({ data });
