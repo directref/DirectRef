@@ -15,6 +15,12 @@ function Logo() {
         <path d="M21.5 3.5c1.9 1.7 1.9 5.3 0 7M24.5 1c3.2 2.9 3.2 9.1 0 12" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.55" />
       </svg>
       <span className="text-[17px]">DirectRef</span>
+      <span
+        className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.06em]"
+        style={{ background: mkt.cardBg, border: `1px solid ${mkt.borderStrong}`, color: mkt.textMuted }}
+      >
+        Beta
+      </span>
     </Link>
   );
 }

@@ -9,6 +9,7 @@ import { ProfileCard } from '@/components/settings/ProfileCard';
 import { LinkedInCard } from '@/components/settings/LinkedInCard';
 import { WorkEmailCard } from '@/components/settings/WorkEmailCard';
 import { BillingCard } from '@/components/settings/BillingCard';
+import { DeleteAccountCard } from '@/components/settings/DeleteAccountCard';
 
 export default function SettingsPage() {
   const { user, refresh } = useAuth();
@@ -52,6 +53,7 @@ export default function SettingsPage() {
         <LinkedInCard />
         {user?.isReferrer && <WorkEmailCard />}
         <BillingCard />
+        <DeleteAccountCard />
       </div>
     </div>
   );

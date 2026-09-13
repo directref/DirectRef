@@ -14,4 +14,5 @@ export const pfx = {
   primaryForeground: 'oklch(0.2 0.03 60)',
   secondary: 'oklch(0.96 0.004 70)',
   linkedinBlue: '#0A66C2',
+  danger: 'oklch(0.52 0.19 27)',
 } as const;
