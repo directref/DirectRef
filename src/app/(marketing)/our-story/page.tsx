@@ -8,11 +8,11 @@ const description =
   'Meet the founders of DirectRef and learn why we built a platform that connects job seekers directly with verified employees at top tech companies.';
 
 export const metadata: Metadata = {
-  title: 'Our Story — DirectRef',
+  title: 'Our Story: DirectRef',
   description,
   alternates: { canonical: '/our-story' },
   openGraph: {
-    title: 'Our Story — DirectRef',
+    title: 'Our Story: DirectRef',
     description,
     url: '/our-story',
     siteName: 'DirectRef',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Our Story — DirectRef',
+    title: 'Our Story: DirectRef',
     description,
   },
 };
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'Our Story — DirectRef',
+  name: 'Our Story: DirectRef',
   description,
   url: 'https://direct-ref.com/our-story',
 };
@@ -50,10 +50,10 @@ export default function OurStoryPage() {
 
         <div className="mt-7 space-y-5 text-[15px] leading-relaxed" style={{ color: mkt.textSecondary }}>
           <p>
-            Hi! We&apos;re Anat and Shai, a married tech couple who found ourselves unexpectedly laid off in the summer of 2026 amid a massive shift in the tech market. Armed with technical know-how, extra time on our hands, and the shared anxiety of job hunting, we dove headfirst into applying for roles online. Like so many of you, we quickly realized how broken standard job boards can be — sending resumes into black holes, competing against thousands of applicants, and hoping a screening algorithm takes mercy on our CVs.
+            Hi! We&apos;re Anat and Shai, a married tech couple who found ourselves unexpectedly laid off in the summer of 2026 amid a massive shift in the tech market. Armed with technical know-how, extra time on our hands, and the shared anxiety of job hunting, we dove headfirst into applying for roles online. Like so many of you, we quickly realized how broken standard job boards can be: sending resumes into black holes, competing against thousands of applicants, and hoping a screening algorithm takes mercy on our CVs.
           </p>
           <p>
-            We knew there had to be a better way. In tech, direct employee referrals are universally known as the gold standard for hiring — employers love them, and employees get referral bonuses for bringing in great talent. Yet, the process of finding an insider to submit your CV was tedious and hit-or-miss. So, we built DirectRef to bridge that gap. We created a win-win platform where company insiders can publish open roles and job seekers can connect directly with them to tap into internal referral programs. Built by job hunters, for job hunters, DirectRef is our way of helping our community cut through the noise and get hired.
+            We knew there had to be a better way. In tech, direct employee referrals are universally known as the gold standard for hiring. Employers love them, and employees get referral bonuses for bringing in great talent. Yet, the process of finding an insider to submit your CV was tedious and hit-or-miss. So, we built DirectRef to bridge that gap. We created a win-win platform where company insiders can publish open roles and job seekers can connect directly with them to tap into internal referral programs. Built by job hunters, for job hunters, DirectRef is our way of helping our community cut through the noise and get hired.
           </p>
         </div>
 

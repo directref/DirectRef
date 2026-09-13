@@ -4,16 +4,17 @@ import { MarketingHeader } from '@/components/marketing/MarketingHeader';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { FaqAccordion } from '@/components/marketing/FaqAccordion';
 import { mkt } from './tokens';
+import { API_BASE } from '@/lib/constants';
 
 const description =
   'Skip the black hole of job boards. DirectRef connects you directly with real employees at top tech companies who can refer you internally.';
 
 export const metadata: Metadata = {
-  title: 'DirectRef — Get Referred by Tech Insiders',
+  title: 'DirectRef: Get Referred by Tech Insiders',
   description,
   alternates: { canonical: '/' },
   openGraph: {
-    title: 'DirectRef — Get Referred by Tech Insiders',
+    title: 'DirectRef: Get Referred by Tech Insiders',
     description,
     url: '/',
     siteName: 'DirectRef',
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DirectRef — Get Referred by Tech Insiders',
+    title: 'DirectRef: Get Referred by Tech Insiders',
     description,
   },
 };
@@ -38,33 +39,63 @@ const referrerPoints = [
   'Earn referral bonuses when the people you refer get hired.',
 ];
 
-const steps = [
-  { eyebrow: 'Submitted', title: 'You send one CV', desc: 'One CV, one short note, sent to a named person inside the company. No seventeen-field portal.' },
-  { eyebrow: 'Viewed', title: 'Your referrer reads it', desc: 'You are notified the moment someone inside the company actually opens your CV.' },
-  { eyebrow: 'Downloaded', title: 'They take it with them', desc: 'The referrer downloads your CV to submit it through their internal referral programme.' },
-  { eyebrow: 'With HR', title: "It lands on the recruiter's desk", desc: "Your CV is in the hands of the hiring team. From here it's their call: if you fit the role, they contact you directly." },
-  { eyebrow: 'Declined', title: 'Or you get a straight no', desc: 'If the referrer passes or HR says no, we tell you that too. A clear no beats days of refreshing an empty inbox.' },
+const phases = [
+  {
+    label: 'Phase 1 · Getting a decision',
+    clock: 'Up to 5 days',
+    steps: [
+      { eyebrow: 'Submitted', title: 'You send one CV', desc: 'One CV, one short note, sent to a named person inside the company. No seventeen-field portal.' },
+      { eyebrow: 'Viewed', title: 'Your referrer reads it', desc: 'You are notified the moment someone inside the company actually opens your CV.' },
+    ],
+    close: 'Your referrer has to answer: refer, or "Not a fit." We remind them on day 1, push harder on day 2, and if they never answer we close the application on day 5 and tell you.',
+  },
+  {
+    label: 'Phase 2 · Getting it submitted',
+    clock: null,
+    steps: [
+      { eyebrow: 'Downloaded', title: 'They take it with them', desc: 'The referrer downloads your CV to put it through their internal referral programme.' },
+      { eyebrow: 'With HR', title: "It lands on the recruiter's desk", desc: "Your CV is in the hands of the hiring team. From here it's their call: if you fit the role, they contact you directly." },
+    ],
+    close: 'We chase the confirmation for you. Two days after the download we remind your referrer to put your CV through their internal process and mark it submitted here. If that confirmation never comes, we close the application and tell you.',
+  },
 ];
 
-// NOTE: placeholder sample only. In production this section should pull a
-// rotating sample of real, currently-active listings from the jobs API
-// instead of this fixed array.
-const positions = [
-  { title: 'Senior Frontend Engineer', company: 'Series C fintech · Tel Aviv', team: 'R&D', referrerCount: 3 },
-  { title: 'Product Manager, Growth', company: 'Seed-stage SaaS · Ramat Gan', team: 'Product', referrerCount: 2 },
-  { title: 'DevOps Engineer', company: 'Series B cybersecurity · Herzliya', team: 'R&D', referrerCount: 5 },
-  { title: 'Marketing Lead', company: 'Series A dev-tools · Tel Aviv', team: 'Marketing', referrerCount: 1 },
-];
+const declinedStep = {
+  eyebrow: 'Declined',
+  title: 'Or you get a straight no',
+  desc: 'If the referrer passes or HR says no, we tell you that too. A clear no beats days of refreshing an empty inbox.',
+};
+
+interface SampleJob {
+  title: string;
+  companyName: string;
+  location: string | null;
+  jobType: string | null;
+}
+
+/** Live sample for the teaser. Returns [] on any failure or when nothing is
+ *  live — the section hides itself rather than inventing listings. */
+async function getSampleJobs(): Promise<SampleJob[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/jobs/sample`, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return Array.isArray(json?.data) ? json.data : [];
+  } catch {
+    return [];
+  }
+}
+
 
 const doPoints = [
   'Put your CV in the hands of a real employee inside the company.',
   'Get it submitted through their internal referral programme, onto the recruiter’s desk.',
   'Notify you at every step: submitted, viewed, downloaded, or declined.',
-  'Run a fixed 5-day response clock — silence gets you automatically rerouted or refunded.',
+  'Chase your referrer on a fixed clock, and close the application and tell you if they never answer.',
 ];
 
 const dontPoints = [
-  'Guarantee an interview — the employer reads your CV and decides.',
+  'Guarantee an interview. The employer reads your CV and decides.',
   'Guarantee a job offer, or influence the hiring decision in any way.',
   'Promise every referrer will take your request. Some will decline, and you’ll be told.',
   'Rewrite, score, or filter your CV. It goes across exactly as you sent it.',
@@ -77,11 +108,23 @@ const faqItems = [
   },
   {
     q: 'Do I have to pay to use DirectRef?',
-    a: "No. Every seeker gets one free application to submit. It's completely free while we're building out the platform. Pricing only kicks in later, and we'll be upfront when it does.",
+    a: "Not if you're looking for a job. Applying is free, with no limit on how many roles you apply to. Referrers spend one credit to post a role; everyone gets 5 credits when they join and 1 more each month, and they never expire. There's currently no way to buy credits.",
+  },
+  {
+    q: 'Why does posting a role cost a credit?',
+    a: 'To keep listings deliberate. One credit, one position. It costs a referrer something to put a role up, so the board stays real rather than filling with copy-pasted listings nobody intends to follow through on.',
   },
   {
     q: "What if I don't know anyone at the company?",
-    a: "That's the whole point. You don't need to. Browse jobs and see who inside the company is willing to refer people like you, then reach out directly through DirectRef.",
+    a: "That's the point. You don't need to. Sign in, browse the open roles, and apply to the one you want. The person who posted it is the person who gets your CV.",
+  },
+  {
+    q: 'What happens if nobody responds?',
+    a: "We chase them: a reminder on day 1, a firmer one on day 2. If your referrer still hasn't answered by day 5 we close the application and tell you. You'll never be left refreshing an inbox. Applying is free and unlimited, so you can send your CV to another role, or another person at the same company, straight away.",
+  },
+  {
+    q: 'Who can see my CV?',
+    a: 'Only the referrer you chose. Not the company, not other users, not us for anything beyond delivering it. Once your referrer forwards it into their company\u2019s hiring process it\u2019s in that company\u2019s hands, and their rules apply from there.',
   },
   {
     q: 'Is this only for tech roles?',
@@ -89,7 +132,26 @@ const faqItems = [
   },
   {
     q: 'What do referrers get out of it?',
-    a: 'Referrers help people they believe in get a real shot, and most companies pay out a referral bonus when their referral gets hired. It’s a win for everyone involved.',
+    a: 'Referrers help people they believe in get a real shot, and most companies pay out a referral bonus when their referral gets hired. Posting a role costs one credit, and everyone gets 5 to start plus 1 a month.',
+  },
+];
+
+const trustPoints = [
+  {
+    title: 'Who sees your CV',
+    desc: 'Only the referrer you chose. Not the company, not other users, not us for anything beyond delivering it.',
+  },
+  {
+    title: 'What we verify',
+    desc: "Every referrer confirms an email at the company's own domain before they can post a role. That proves they can receive mail there. It doesn't prove they'll still work there next month, and we say so in the terms.",
+  },
+  {
+    title: "After it's forwarded",
+    desc: "Once your CV goes into a company's hiring process, that company's rules apply and we can't pull it back.",
+  },
+  {
+    title: 'Deleting it',
+    desc: 'Delete your account from Settings and every CV you uploaded goes with it. Closed applications, their CV and their messages are erased after 30 days of inactivity.',
   },
 ];
 
@@ -108,7 +170,9 @@ const jsonLd = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const sampleJobs = await getSampleJobs();
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -125,7 +189,7 @@ export default function LandingPage() {
               Get referred from the inside.
             </h1>
             <p className="mt-6 max-w-xl text-[15px] leading-relaxed" style={{ color: mkt.textSecondary }}>
-              Your CV, hand-delivered. Connect with insiders at top tech companies and startups. Skip the black hole of job boards.
+              Send your CV to a named person inside the company, and find out exactly what happened to it. No black hole, no silence.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -133,26 +197,27 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-2 rounded-[10px] text-[14px] font-semibold"
                 style={{ background: mkt.accentSeeker, color: '#1a1206', padding: '13px 22px' }}
               >
-                Join as seeker →
+                Find a referral →
               </Link>
               <Link
                 href="/login"
                 className="inline-flex items-center rounded-[10px] text-[14px] font-medium"
                 style={{ border: `1px solid ${mkt.borderStrong}`, color: mkt.textPrimary, padding: '12.5px 22px' }}
               >
-                Offer a referral
+                Refer someone
               </Link>
             </div>
             <p className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-[12.5px]" style={{ color: mkt.textMuted }}>
-              <span>Free to start</span>
-              <span>No credit card</span>
+              <span>Free for job seekers</span>
+              <span>Referrers verify a work email</span>
+              <span>You always hear back</span>
             </p>
           </div>
 
           {/* Illustrative application-status schematic — not a screenshot, not real data */}
           <div className="rounded-2xl p-5 self-start" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.09em]" style={{ color: mkt.textMuted }}>
-              Your applications — schematic
+              Your applications (schematic)
             </p>
             <div className="space-y-3">
               <div className="rounded-xl p-3.5" style={{ border: `1px solid ${mkt.border}` }}>
@@ -169,7 +234,7 @@ export default function LandingPage() {
                 <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full" style={{ background: mkt.border }}>
                   <div className="h-full rounded-full" style={{ width: '38%', background: mkt.accentSeeker }} />
                 </div>
-                <p className="mt-1.5 text-[11px]" style={{ color: mkt.textMuted }}>Day 2 of 5 — reminder sent</p>
+                <p className="mt-1.5 text-[11px]" style={{ color: mkt.textMuted }}>Day 2 of 5 · reminder sent</p>
               </div>
               <div className="rounded-xl p-3.5" style={{ border: `1px solid ${mkt.border}` }}>
                 <div className="flex items-center justify-between">
@@ -228,7 +293,7 @@ export default function LandingPage() {
               ))}
             </div>
             <Link href="/login" className="self-start mt-1 text-[14px] font-semibold" style={{ color: mkt.accentSeeker }}>
-              Browse jobs →
+              Find a referral →
             </Link>
           </div>
 
@@ -243,69 +308,117 @@ export default function LandingPage() {
               ))}
             </div>
             <Link href="/login" className="self-start mt-1 text-[14px] font-semibold" style={{ color: mkt.textPrimary }}>
-              Post your job →
+              Refer someone →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS — two clocks, named */}
       <section id="how" className="border-b" style={{ borderColor: mkt.border }}>
         <div className="mx-auto max-w-6xl px-5 py-16">
           <p className="text-xs font-semibold uppercase tracking-[0.09em]" style={{ color: mkt.textMuted }}>How it works</p>
           <h2 className="mt-3 text-[26px] font-bold">You see every step your CV takes.</h2>
           <p className="mt-3 max-w-2xl text-[15px] leading-relaxed" style={{ color: mkt.textSecondary }}>
-            Five status changes, each one a notification. Every application runs on a fixed 5-day response clock — a reminder on day 1, an automatic reroute on day 2, and your credit refunded on day 5 if there's still silence.
+            Every status change is a notification. Your application runs on two clocks: one to get you a decision, one to get that decision acted on. You are told where it stands at the end of each.
           </p>
-          <ol className="mt-10 max-w-2xl" style={{ borderLeft: `1px solid ${mkt.border}` }}>
-            {steps.map((step) => (
-              <li key={step.title} className="relative pb-9 pl-8 last:pb-0">
-                <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full" style={{ background: mkt.accentSeeker }} />
-                <p className="text-xs font-semibold uppercase tracking-[0.09em]" style={{ color: mkt.textMuted }}>{step.eyebrow}</p>
-                <p className="mt-1 text-[17px] font-semibold" style={{ color: mkt.textPrimary }}>{step.title}</p>
-                <p className="mt-1 text-[14px]" style={{ color: mkt.textSecondary }}>{step.desc}</p>
-              </li>
+
+          <div className="mt-10 flex flex-col gap-10">
+            {phases.map((phase) => (
+              <div key={phase.label} className="max-w-2xl">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <p className="text-[15px] font-semibold" style={{ color: mkt.textPrimary }}>{phase.label}</p>
+                  {phase.clock && (
+                    <span
+                      className="rounded-full px-2.5 py-0.5 text-[12px] font-medium"
+                      style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}`, color: mkt.textMuted }}
+                    >
+                      {phase.clock}
+                    </span>
+                  )}
+                </div>
+                <ol className="mt-5" style={{ borderLeft: `1px solid ${mkt.border}` }}>
+                  {phase.steps.map((step) => (
+                    <li key={step.title} className="relative pb-7 pl-8">
+                      <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full" style={{ background: mkt.accentSeeker }} />
+                      <p className="text-xs font-semibold uppercase tracking-[0.09em]" style={{ color: mkt.textMuted }}>{step.eyebrow}</p>
+                      <p className="mt-1 text-[17px] font-semibold" style={{ color: mkt.textPrimary }}>{step.title}</p>
+                      <p className="mt-1 text-[14px]" style={{ color: mkt.textSecondary }}>{step.desc}</p>
+                    </li>
+                  ))}
+                </ol>
+                <p className="pl-8 text-[13.5px] leading-relaxed" style={{ color: mkt.textMuted }}>{phase.close}</p>
+              </div>
             ))}
-          </ol>
+
+            <div className="max-w-2xl">
+              <ol style={{ borderLeft: `1px solid ${mkt.border}` }}>
+                <li className="relative pl-8">
+                  <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full" style={{ background: mkt.borderStrong }} />
+                  <p className="text-xs font-semibold uppercase tracking-[0.09em]" style={{ color: mkt.textMuted }}>{declinedStep.eyebrow}</p>
+                  <p className="mt-1 text-[17px] font-semibold" style={{ color: mkt.textPrimary }}>{declinedStep.title}</p>
+                  <p className="mt-1 text-[14px]" style={{ color: mkt.textSecondary }}>{declinedStep.desc}</p>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <p className="mt-8 max-w-2xl text-[13.5px]" style={{ color: mkt.textMuted }}>
+            Messaging pauses the clock. An active conversation is the system working, not failing.
+          </p>
         </div>
       </section>
 
-      {/* LIVE POSITIONS TEASER */}
-      <section id="positions" className="max-w-6xl mx-auto px-5 py-16">
-        <div className="flex items-baseline justify-between mb-8 flex-wrap gap-3">
-          <div>
-            <h2 className="text-[26px] font-bold">Roles with a way in, right now</h2>
-            <p className="mt-2 text-[15px]" style={{ color: mkt.textSecondary }}>A sample of what's live on DirectRef today.</p>
-          </div>
-          <Link href="/login" className="font-semibold text-[14px] whitespace-nowrap" style={{ color: mkt.accentSeeker }}>
-            Browse tech jobs →
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {positions.map((pos) => (
-            <div key={pos.title} className="rounded-2xl p-6 flex flex-col gap-3.5" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-[15px] font-semibold mb-1" style={{ color: mkt.textPrimary }}>{pos.title}</h3>
-                  <p className="text-[13px]" style={{ color: mkt.textSecondary }}>{pos.company}</p>
-                </div>
-                <span
-                  className="text-[12px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-                  style={{ color: mkt.textMuted, background: mkt.bg, border: `1px solid ${mkt.border}` }}
-                >
-                  {pos.team}
-                </span>
-              </div>
-              <p className="text-[13.5px] font-semibold" style={{ color: mkt.accentSeeker }}>{pos.referrerCount} people inside can refer you</p>
-              <Link
-                href="/login"
-                className="self-start text-[13.5px] font-semibold"
-                style={{ color: mkt.textPrimary, borderBottom: `1.5px solid ${mkt.textPrimary}` }}
-              >
-                View position
-              </Link>
+      {/* LIVE POSITIONS TEASER — real listings only; hidden when nothing is live */}
+      {sampleJobs.length > 0 && (
+        <section id="positions" className="max-w-6xl mx-auto px-5 py-16">
+          <div className="flex items-baseline justify-between mb-8 flex-wrap gap-3">
+            <div>
+              <h2 className="text-[26px] font-bold">Roles with a way in, right now</h2>
+              <p className="mt-2 text-[15px]" style={{ color: mkt.textSecondary }}>A sample of what&apos;s live on DirectRef today.</p>
             </div>
-          ))}
+            <Link href="/login" className="font-semibold text-[14px] whitespace-nowrap" style={{ color: mkt.accentSeeker }}>
+              Sign in to browse →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {sampleJobs.map((job) => (
+              <div key={`${job.title}-${job.companyName}`} className="rounded-2xl p-6 flex flex-col gap-3.5" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
+                <div className="flex justify-between items-start gap-3">
+                  <div>
+                    <h3 className="text-[15px] font-semibold mb-1" style={{ color: mkt.textPrimary }}>{job.title}</h3>
+                    <p className="text-[13px]" style={{ color: mkt.textSecondary }}>
+                      {[job.companyName, job.location].filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
+                  {job.jobType && (
+                    <span
+                      className="text-[12px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                      style={{ color: mkt.textMuted, background: mkt.bg, border: `1px solid ${mkt.border}` }}
+                    >
+                      {job.jobType}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* TRUST */}
+      <section id="trust" className="border-b" style={{ borderColor: mkt.border }}>
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <p className="text-xs font-semibold uppercase tracking-[0.09em]" style={{ color: mkt.textMuted }}>Your CV</p>
+          <h2 className="mt-3 text-[26px] font-bold">Where it goes, and who we check.</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            {trustPoints.map((pt) => (
+              <div key={pt.title} className="rounded-2xl p-6" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
+                <p className="text-[15px] font-semibold" style={{ color: mkt.textPrimary }}>{pt.title}</p>
+                <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: mkt.textSecondary }}>{pt.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -352,7 +465,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl px-5 py-20 text-center">
           <h2 className="text-[26px] sm:text-[28px] font-bold leading-tight">One CV. A real person. Onto the recruiter's desk.</h2>
           <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed" style={{ color: mkt.textSecondary }}>
-            We will not promise you an interview. We will make sure your CV is actually read by the people who decide — and tell you exactly where it stands.
+            We will not promise you an interview. We will make sure your CV is actually read by the people who decide, and tell you exactly where it stands.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
@@ -360,7 +473,7 @@ export default function LandingPage() {
               className="rounded-[10px] text-[14px] font-semibold"
               style={{ background: mkt.accentSeeker, color: '#1a1206', padding: '13px 22px' }}
             >
-              Get referred — it's free
+              Get referred for free
             </Link>
             <Link
               href="/login"
