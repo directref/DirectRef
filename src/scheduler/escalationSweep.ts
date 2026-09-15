@@ -8,7 +8,6 @@ import {
   sendReminderEmail,
   sendSecondReminderEmail,
   sendSubmitReminderEmail,
-  // sendSubmitFollowupEmail, // paused — see the commented call site below
   sendExpiredEmail,
   // sendReferrerExpiredEmail, // paused — see the commented call sites below
 } from '../services/email';
@@ -190,8 +189,8 @@ async function sendDay5AutoCancellations(): Promise<number> {
 /** Day 2 from download — ask the referrer whether they submitted it internally. */
 async function sendSubmitReminders(): Promise<number> {
   const cutoff = new Date(Date.now() - SUBMIT_ESCALATION_MS.REMINDER);
-  // Same windowing as Clock A: past the followup line, skip straight to it.
-  const followupCutoff = new Date(Date.now() - SUBMIT_ESCALATION_MS.FOLLOWUP);
+  // Anything already past the auto-cancel line is that step's business, not ours.
+  const autoCancelCutoff = new Date(Date.now() - SUBMIT_ESCALATION_MS.AUTO_CANCEL);
   const rows = await db
     .select({
       application: applications,
@@ -202,7 +201,7 @@ async function sendSubmitReminders(): Promise<number> {
     .where(and(
       eq(applications.status, 'forwarded'),
       lte(applications.forwardedAt, cutoff),
-      gt(applications.forwardedAt, followupCutoff),
+      gt(applications.forwardedAt, autoCancelCutoff),
       isNull(applications.submitReminderSentAt),
     ));
 
@@ -226,50 +225,6 @@ async function sendSubmitReminders(): Promise<number> {
       await db.update(applications).set({ submitReminderSentAt: new Date() }).where(eq(applications.id, row.application.id));
     } catch (err) {
       console.error('[escalation] submit reminder failed for application', row.application.id, err);
-    }
-  }
-  return rows.length;
-}
-
-/** Day 3 from download — a final reminder before this heads toward auto-cancel. */
-async function sendSubmitFollowups(): Promise<number> {
-  const cutoff = new Date(Date.now() - SUBMIT_ESCALATION_MS.FOLLOWUP);
-  const autoCancelCutoff = new Date(Date.now() - SUBMIT_ESCALATION_MS.AUTO_CANCEL);
-  const rows = await db
-    .select({
-      application: applications,
-      job: { title: jobs.title, companyName: jobs.companyName },
-    })
-    .from(applications)
-    .innerJoin(jobs, eq(jobs.id, applications.jobId))
-    .where(and(
-      eq(applications.status, 'forwarded'),
-      lte(applications.forwardedAt, cutoff),
-      gt(applications.forwardedAt, autoCancelCutoff),
-      isNull(applications.submitFollowupSentAt),
-    ));
-
-  for (const row of rows) {
-    try {
-      const [seeker] = await db.select().from(users).where(eq(users.id, row.application.seekerId)).limit(1);
-      const [referrer] = await db.select().from(users).where(eq(users.id, row.application.referrerId)).limit(1);
-      if (!seeker || !referrer) continue;
-
-      const inboxUrl = `${env.FRONTEND_URL}/applications/inbox`;
-      await createNotification(
-        referrer.id,
-        'cv_submit_followup',
-        `Last check: did ${seeker.fullName}'s CV get submitted?`,
-        `This resets in 2 days if we don't hear back for ${row.job.title} at ${row.job.companyName}.`,
-        inboxUrl,
-      ).catch(() => {});
-      // Day-3 followup email paused — one post-download reminder (day 2) is enough.
-      // await sendSubmitFollowupEmail(referrer.email, referrer.fullName, seeker.fullName, row.job.title, row.job.companyName, inboxUrl)
-      //   .catch((err) => console.error('[escalation] submit followup email failed:', err));
-
-      await db.update(applications).set({ submitFollowupSentAt: new Date() }).where(eq(applications.id, row.application.id));
-    } catch (err) {
-      console.error('[escalation] submit followup failed for application', row.application.id, err);
     }
   }
   return rows.length;
@@ -350,13 +305,12 @@ export async function runEscalationSweep(): Promise<void> {
     const submitCancelled = await sendSubmitAutoCancellations();
     const escalated = await sendDay2SecondReminders();
     const reminded = await sendDay1Reminders();
-    const submitFollowedUp = await sendSubmitFollowups();
     const submitReminded = await sendSubmitReminders();
-    const total = reminded + escalated + cancelled + submitReminded + submitFollowedUp + submitCancelled;
+    const total = reminded + escalated + cancelled + submitReminded + submitCancelled;
     if (total) {
       console.log(
         `[escalation] sweep: A[${reminded} reminded, ${escalated} escalated, ${cancelled} auto-cancelled] ` +
-        `B[${submitReminded} reminded, ${submitFollowedUp} followed up, ${submitCancelled} auto-cancelled]`,
+        `B[${submitReminded} reminded, ${submitCancelled} auto-cancelled]`,
       );
     }
   } catch (err) {
