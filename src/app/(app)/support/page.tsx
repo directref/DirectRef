@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { useCreditBalance } from '@/lib/hooks/useCredits';
 import { Button } from '@/components/ui/Button';
 
-const SUPPORT_EMAIL = 'support@directref.com';
+const SUPPORT_EMAIL = 'support@direct-ref.com';
 
 export default function SupportPage() {
   const router = useRouter();
