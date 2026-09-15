@@ -11,4 +11,12 @@ export const mkt = {
   borderStrong: 'oklch(0.88 0.006 65)',
   accentSeeker: 'oklch(0.72 0.13 85)',
   accentReferral: 'oklch(0.72 0.01 260)',
+  // Matches the real app's --color-warn / --color-good (globals.css) — the
+  // "schematic" application-status card should read as the same product as
+  // the actual status pills in Sent CV / CV Inbox, not an independently
+  // invented palette.
+  statusWarnBg: '#b0801019',
+  statusWarnText: '#b08010',
+  statusGoodBg: '#0a7a0a19',
+  statusGoodText: '#0a7a0a',
 } as const;
