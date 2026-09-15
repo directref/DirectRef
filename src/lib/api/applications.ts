@@ -25,10 +25,6 @@ export const applicationsApi = {
   updateStatus: (id: string, status: 'viewed' | 'forwarded' | 'rejected' | 'internally_submitted') =>
     api.patch(`/api/applications/${id}/status`, { status }),
 
-  /** Forward to HR */
-  forward: (id: string, body: { hrEmail: string; referrerNote?: string }) =>
-    api.post(`/api/applications/${id}/forward`, body),
-
   /** Seeker: swap the CV on a pending application — only while status is
    *  'submitted' (before the referrer has opened it). */
   replaceCv: (id: string, file: File) => {

@@ -94,8 +94,6 @@ export interface Application {
   cvMimetype: string;
   coverNote: string | null;
   status: 'submitted' | 'viewed' | 'forwarded' | 'internally_submitted' | 'rejected' | 'expired' | 'withdrawn';
-  referrerNote: string | null;
-  hrEmail: string | null;
   forwardedAt: string | null;
   createdAt: string;
   updatedAt: string;
