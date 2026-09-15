@@ -44,7 +44,7 @@ const phases = [
     label: 'Phase 1 · Getting a decision',
     clock: 'Up to 5 days',
     steps: [
-      { eyebrow: 'Submitted', title: 'You send one CV', desc: 'One CV, one short note, sent to a named person inside the company. Not another seventeen-field application form.' },
+      { eyebrow: 'Submitted', title: 'You send one CV', desc: 'One CV, one short note, sent to a named person inside the company. No long form to fill out.' },
       { eyebrow: 'Viewed', title: 'Your referrer reads it', desc: 'You are notified the moment someone inside the company actually opens your CV.' },
     ],
     close: 'Your referrer has to answer: refer, or "Not a fit." We send a reminder on day 1 and a follow-up on day 2 — if they still haven’t answered, we close the application on day 5 and let you know.',
@@ -53,7 +53,7 @@ const phases = [
     label: 'Phase 2 · Getting it submitted',
     clock: null,
     steps: [
-      { eyebrow: 'Downloaded', title: 'They take it with them', desc: "The referrer downloads your CV to submit it through their company's internal referral programme." },
+      { eyebrow: 'Downloaded', title: 'Your referrer downloads it', desc: "The referrer downloads your CV to submit it through their company's internal referral programme." },
       { eyebrow: 'With HR', title: "It lands on the recruiter's desk", desc: "Your CV is in the hands of the hiring team. From here it's their call: if you fit the role, they contact you directly." },
     ],
     close: 'We chase the confirmation for you. Two days after the download we remind your referrer to put your CV through their internal process and mark it submitted here. If that confirmation never comes, we close the application and tell you.',
