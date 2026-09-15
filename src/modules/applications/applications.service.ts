@@ -340,8 +340,15 @@ export async function updateStatus(
   // CV file is already deleted from disk, so "Download" or "Not a fit"
   // reaching here would either 404 or silently override a decision that
   // was never the referrer's to make.
-  const TERMINAL_STATUSES = ['withdrawn', 'rejected', 'expired', 'internally_submitted'];
+  const TERMINAL_STATUSES = ['withdrawn', 'rejected', 'expired'];
   if (TERMINAL_STATUSES.includes(app.status)) {
+    throw new AppError(400, 'ALREADY_DECIDED', 'This application has already reached a final state and can no longer be updated');
+  }
+  // 'internally_submitted' stays terminal for every transition except one:
+  // HR can still pass on the candidate after the referrer already submitted
+  // their CV internally, and the referrer needs a way to tell the seeker —
+  // so marking it 'rejected' after the fact is the one exception.
+  if (app.status === 'internally_submitted' && status !== 'rejected') {
     throw new AppError(400, 'ALREADY_DECIDED', 'This application has already reached a final state and can no longer be updated');
   }
   // Confirming internal submission only makes sense after the CV was actually
