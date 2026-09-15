@@ -90,9 +90,14 @@ export function Sidebar() {
           <LogoMark size={20} />
         </div>
         <span className="flex flex-col gap-0.5 leading-none">
-          <span className="text-lg font-black tracking-tight leading-none">
-            <span style={{ background: 'linear-gradient(160deg,#FAFAFA,#E8E8E8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Direct</span>
-            <span style={{ background: 'linear-gradient(160deg,#F0D9A8,#D4AF7A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Ref</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-lg font-black tracking-tight leading-none">
+              <span style={{ background: 'linear-gradient(160deg,#FAFAFA,#E8E8E8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Direct</span>
+              <span style={{ background: 'linear-gradient(160deg,#F0D9A8,#D4AF7A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Ref</span>
+            </span>
+            <span className="text-[9px] font-bold uppercase tracking-wide text-gold-300 bg-gold-300/15 border border-gold-300/30 rounded-full px-1.5 py-0.5 leading-none">
+              Beta
+            </span>
           </span>
           <span className="text-[9px] font-medium text-sidebar-muted leading-none">Refer. Get hired.</span>
         </span>
