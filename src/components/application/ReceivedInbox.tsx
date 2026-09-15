@@ -273,7 +273,7 @@ function DetailPanel({
   // later from the "All" filter — without this it fell through to the
   // default branch and offered Download/Not a fit on an application whose
   // CV file no longer even exists on disk.
-  const isDecided = application.status === 'internally_submitted' || application.status === 'rejected' || application.status === 'expired' || application.status === 'withdrawn';
+  const isDecided = application.status === 'rejected' || application.status === 'expired' || application.status === 'withdrawn';
   const cvUrl = applicationsApi.cvUrl(application.id);
   const cvPreviewUrl = applicationsApi.cvPreviewUrl(application.id);
 
@@ -395,26 +395,50 @@ function DetailPanel({
           <p className="text-sm text-text-secondary bg-input rounded-lg px-3.5 py-2.5">
             Did you submit this to your internal system yet?
           </p>
+          <div className="flex gap-3">
+            <Button
+              variant="primary"
+              onClick={handleConfirmSubmitted}
+              isLoading={busy === 'confirm'}
+              disabled={busy !== null}
+              className="flex-1"
+            >
+              Submitted
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleNotAFit}
+              isLoading={busy === 'reject'}
+              disabled={busy !== null}
+              className="flex-1"
+            >
+              Not a fit
+            </Button>
+          </div>
+        </div>
+      ) : application.status === 'internally_submitted' ? (
+        <div className="space-y-3">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
+            <CheckIcon /> Submitted internally.
+          </p>
           <Button
-            variant="primary"
-            onClick={handleConfirmSubmitted}
-            isLoading={busy === 'confirm'}
+            variant="secondary"
+            onClick={handleNotAFit}
+            isLoading={busy === 'reject'}
             disabled={busy !== null}
             className="w-full"
           >
-            Submitted
+            Not a fit after all
           </Button>
         </div>
       ) : isDecided ? (
         <p className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
           <CheckIcon />
-          {application.status === 'internally_submitted'
-            ? 'Submitted internally.'
-            : application.status === 'expired'
-              ? "This application expired because the referrer didn't respond within 5 days."
-              : application.status === 'withdrawn'
-                ? 'Withdrawn by the seeker before you opened it.'
-                : 'Marked not a fit.'}
+          {application.status === 'expired'
+            ? "This application expired because the referrer didn't respond within 5 days."
+            : application.status === 'withdrawn'
+              ? 'Withdrawn by the seeker before you opened it.'
+              : 'Marked not a fit.'}
         </p>
       ) : (
         <div className="flex gap-3">
