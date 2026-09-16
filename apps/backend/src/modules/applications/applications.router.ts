@@ -1,0 +1,28 @@
+import { Router } from 'express';
+import * as ctrl from './applications.controller';
+import { validate } from '../../middleware/validate';
+import { requireAuth } from '../../middleware/auth';
+import { uploadLimiter } from '../../middleware/rateLimiter';
+import { uploadCV } from '../../middleware/upload';
+import { SubmitApplicationSchema, UpdateStatusSchema, SendMessageSchema } from './applications.schemas';
+
+const router = Router();
+
+router.use(requireAuth);
+
+// Note: specific named routes before /:id
+router.get('/inbox', ctrl.getInbox);
+router.get('/mine', ctrl.getMine);
+
+router.post('/', uploadLimiter, uploadCV, validate(SubmitApplicationSchema), ctrl.submitApplication);
+
+router.get('/:id', ctrl.getApplication);
+router.patch('/:id/status', validate(UpdateStatusSchema), ctrl.updateStatus);
+router.patch('/:id/cv', uploadLimiter, uploadCV, ctrl.replaceCv);
+router.post('/:id/withdraw', ctrl.withdrawApplication);
+router.get('/:id/cv', ctrl.downloadCV);
+router.get('/:id/cv/preview', ctrl.previewCV);
+router.get('/:id/messages', ctrl.getMessages);
+router.post('/:id/messages', validate(SendMessageSchema), ctrl.sendMessage);
+
+export default router;
