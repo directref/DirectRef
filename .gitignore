@@ -17,6 +17,7 @@ build/
 uploads/
 
 # test output
+.test-uploads/
 coverage/
 playwright-report/
 test-results/
