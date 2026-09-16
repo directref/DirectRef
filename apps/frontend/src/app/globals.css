@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Sidebar surfaces (warm dark) ──────────────── */
+  --color-sidebar:       #120E09;
+  --color-sidebar-card:  #1A1410;
+  --color-sidebar-border: rgba(212, 175, 122, 0.08);
+  --color-sidebar-foreground: #F0E8D8;
+  --color-sidebar-muted:      #A89070;
+
+  /* ── Jobs pages (Browse / Detail / Send CV) — per Jobs Design spec ──
+     Separate warm-light palette, scoped to this feature so it doesn't
+     shift the shared text-primary (kept pure black elsewhere). */
+  --color-jobs-bg:              oklch(0.985 0.003 75);
+  --color-jobs-surface:         oklch(1 0 0);
+  --color-jobs-ink:             oklch(0.24 0.008 60);
+  --color-jobs-ink-secondary:   oklch(0.47 0.008 60);
+  --color-jobs-ink-muted:       oklch(0.62 0.008 60);
+  --color-jobs-border:          oklch(0.93 0.004 70);
+  --color-jobs-border-strong:   oklch(0.88 0.006 65);
+  --color-jobs-gold-soft:       oklch(0.94 0.05 85);
+  --color-jobs-silver:          oklch(0.5 0.02 60);
+  --color-jobs-chip-bg:         oklch(0.94 0.004 70);
+  --color-jobs-chip-text:       oklch(0.4 0.008 60);
+  --color-jobs-highlight-wash:  oklch(0.97 0.02 85);
+  --color-jobs-status-fwd-bg:   oklch(0.87 0.1 160);
+  --color-jobs-status-fwd-text: oklch(0.25 0.06 160);
+  --color-jobs-success:         oklch(0.5 0.11 160);
+
+  /* ── Main content surfaces (light grey) ────────── */
+  --color-page:          #F2F2F2;
+  --color-card:          #FFFFFF;
+  --color-card-hover:    #EBEBEB;
+  --color-input:         #E8E8E8;
+  --color-border:        rgba(26, 18, 9, 0.08);
+  --color-border-strong: rgba(26, 18, 9, 0.13);
+
+  /* ── Text ──────────────────────────────────────── */
+  --color-text-primary:   #000000;
+  --color-text-secondary: #000000;
+  --color-text-muted:     #999999;
+  /* Used for the clickable job-title line on job cards (Jobs Page Dev Spec) */
+  --color-accent-silver:  #808080;
+
+  /* ── Brand — Warm Gold ─────────────────────────── */
+  --color-gold-100: #FAF0DC;
+  --color-gold-200: #F0D9A8;
+  --color-gold-300: #D4AF7A;
+  --color-gold-400: #C49A5A;
+  --color-gold-500: #A87D3A;
+  --color-gold-glow: rgba(212, 175, 122, 0.20);
+
+  /* Keep violet names mapped to gold so existing classes work */
+  --color-violet-300: #C49A5A;
+  --color-violet-400: #B88A4A;
+  --color-violet-500: #A87D3A;
+  --color-violet-600: #8A6228;
+  --color-violet-700: #6A4A18;
+  --color-violet-glow: rgba(212, 175, 122, 0.15);
+
+  /* ── Series / data ─────────────────────────────── */
+  --color-teal:  #0D7A52;
+  --color-amber: #8A5A00;
+  --color-rose:  #A03030;
+  --color-blue:  #2A50A4;
+
+  /* ── Status ────────────────────────────────────── */
+  --color-good:    #0a7a0a;
+  --color-warn:    #b08010;
+  --color-serious: #c05a20;
+  --color-crit:    #a02020;
+
+  /* ── Radii ─────────────────────────────────────── */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 999px;
+
+  /* ── Font ──────────────────────────────────────── */
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar        { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track  { background: var(--color-card-hover); }
+  ::-webkit-scrollbar-thumb  { background: var(--color-text-muted); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-text-secondary); }
+
+  input, textarea, select, button { font-family: inherit; }
+
+  a { color: inherit; text-decoration: none; }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-400);
+    outline-offset: 2px;
+  }
+}

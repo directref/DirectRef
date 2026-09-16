@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DirectRef — Creative Icon Options</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0D0A07;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #F0E8D8;
+      padding: 48px 32px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #5A4A2A;
+      margin-bottom: 48px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #120E09;
+      border: 1px solid rgba(212,175,122,0.12);
+      border-radius: 16px;
+      padding: 28px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: rgba(212,175,122,0.5);
+      box-shadow: 0 0 40px rgba(212,175,122,0.07);
+    }
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #5A4A2A;
+    }
+    .sidebar-preview {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0D0A07;
+      border: 1px solid rgba(212,175,122,0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 100%;
+    }
+    .brand-text { display: flex; flex-direction: column; gap: 2px; }
+    .brand-name { font-size: 15px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+    .direct {
+      background: linear-gradient(160deg,#FAFAFA,#C8C8C8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .ref {
+      background: linear-gradient(160deg,#F0D9A8,#D4AF7A);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand-tag { font-size: 8px; font-weight: 500; color: #5A4A2A; }
+
+    .icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: rgba(212,175,122,0.10);
+      border: 1px solid rgba(212,175,122,0.28);
+    }
+    .solo {
+      width: 72px; height: 72px; border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(212,175,122,0.08);
+      border: 1px solid rgba(212,175,122,0.22);
+    }
+    .desc {
+      font-size: 11px; color: #7A6040;
+      text-align: center; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<h1>DirectRef — Creative Concepts</h1>
+<div class="grid">
+
+
+  <!-- 1: Envelope launching as paper plane -->
+  <div class="card">
+    <div class="label">1 — Paper Plane Envelope</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- envelope folded into paper plane shape -->
+        <path d="M4 20 L44 8 L28 44 L20 28 Z" fill="rgba(212,175,122,0.12)" stroke="#D4AF7A" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M4 20 L20 28 L44 8" stroke="#D4AF7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 28 L24 36" stroke="#F0D9A8" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2 2"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <path d="M4 20 L44 8 L28 44 L20 28 Z" fill="rgba(212,175,122,0.15)" stroke="#D4AF7A" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M4 20 L20 28 L44 8" stroke="#D4AF7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Envelope as paper plane — your referral sent directly, fast</div>
+  </div>
+
+
+  <!-- 2: Open envelope with person emerging + arrow -->
+  <div class="card">
+    <div class="label">2 — Person from Envelope</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- envelope body -->
+        <rect x="4" y="22" width="32" height="22" rx="2.5" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="1.8"/>
+        <!-- open flap -->
+        <path d="M4 22 L20 32 L36 22" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- person rising from envelope -->
+        <circle cx="20" cy="14" r="5" fill="rgba(212,175,122,0.15)" stroke="#F0D9A8" stroke-width="1.8"/>
+        <circle cx="20" cy="12" r="2" fill="#F0D9A8"/>
+        <path d="M15 18 Q20 16 25 18" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <!-- arrow right -->
+        <line x1="39" y1="33" x2="46" y2="33" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+        <polyline points="43,29 46,33 43,37" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="22" width="32" height="22" rx="2.5" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="2"/>
+          <path d="M4 22 L20 32 L36 22" stroke="#D4AF7A" stroke-width="1.8" fill="none"/>
+          <circle cx="20" cy="14" r="5" fill="rgba(212,175,122,0.15)" stroke="#F0D9A8" stroke-width="2"/>
+          <circle cx="20" cy="12" r="2" fill="#F0D9A8"/>
+          <path d="M15 18 Q20 16 25 18" stroke="#F0D9A8" stroke-width="1.5" fill="none"/>
+          <line x1="39" y1="33" x2="46" y2="33" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="43,29 46,33 43,37" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person rising out of an open envelope — the referral unlocks you</div>
+  </div>
+
+
+  <!-- 3: Stylised R where leg becomes arrow -->
+  <div class="card">
+    <div class="label">3 — R as Arrow</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- R vertical bar -->
+        <rect x="9" y="6" width="5" height="36" rx="2" fill="#D4AF7A"/>
+        <!-- R bump -->
+        <path d="M14 6 H24 Q34 6 34 17 Q34 28 24 28 H14" fill="none" stroke="#D4AF7A" stroke-width="5" stroke-linejoin="round"/>
+        <!-- R leg becomes arrow -->
+        <line x1="24" y1="28" x2="37" y2="42" stroke="#F0D9A8" stroke-width="4.5" stroke-linecap="round"/>
+        <!-- arrowhead -->
+        <polyline points="28,42 37,42 37,33" stroke="#F0D9A8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="9" y="6" width="5" height="36" rx="2" fill="#D4AF7A"/>
+          <path d="M14 6 H24 Q34 6 34 17 Q34 28 24 28 H14" fill="none" stroke="#D4AF7A" stroke-width="5" stroke-linejoin="round"/>
+          <line x1="24" y1="28" x2="37" y2="42" stroke="#F0D9A8" stroke-width="4.5" stroke-linecap="round"/>
+          <polyline points="28,42 37,42 37,33" stroke="#F0D9A8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">The "R" of Ref — its leg transforms into a pointing arrow</div>
+  </div>
+
+
+  <!-- 4: Envelope + arrow through it -->
+  <div class="card">
+    <div class="label">4 — Arrow Through Envelope</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- envelope -->
+        <rect x="5" y="14" width="34" height="24" rx="3" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="1.8"/>
+        <path d="M5 14 L22 26 L39 14" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- arrow piercing through -->
+        <line x1="2" y1="26" x2="46" y2="26" stroke="#F0D9A8" stroke-width="2.5" stroke-linecap="round"/>
+        <polyline points="40,21 46,26 40,31" stroke="#F0D9A8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- white gap to look like it passes through -->
+        <rect x="5" y="23" width="34" height="6" fill="rgba(212,175,122,0.05)"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="5" y="14" width="34" height="24" rx="3" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="2"/>
+          <path d="M5 14 L22 26 L39 14" stroke="#D4AF7A" stroke-width="1.8" fill="none"/>
+          <line x1="2" y1="26" x2="46" y2="26" stroke="#F0D9A8" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="40,21 46,26 40,31" stroke="#F0D9A8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Arrow cuts through an envelope — direct, fast, unstoppable referral</div>
+  </div>
+
+
+  <!-- 5: Person holding envelope + forward arrow -->
+  <div class="card">
+    <div class="label">5 — Passing the Letter</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- person -->
+        <circle cx="11" cy="10" r="5" stroke="#D4AF7A" stroke-width="1.8"/>
+        <path d="M11 15 L11 28" stroke="#D4AF7A" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M11 28 L8 38" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M11 28 L14 38" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- arm extended holding envelope -->
+        <path d="M11 19 L22 19" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- mini envelope in hand -->
+        <rect x="22" y="14" width="14" height="10" rx="1.5" fill="rgba(212,175,122,0.15)" stroke="#F0D9A8" stroke-width="1.5"/>
+        <path d="M22 14 L29 20 L36 14" stroke="#F0D9A8" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- arrow forward -->
+        <line x1="38" y1="19" x2="46" y2="19" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+        <polyline points="42,15 46,19 42,23" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <circle cx="11" cy="10" r="5" stroke="#D4AF7A" stroke-width="2"/>
+          <path d="M11 15 L11 28" stroke="#D4AF7A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M11 28 L8 38" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M11 28 L14 38" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M11 19 L22 19" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="22" y="14" width="14" height="10" rx="1.5" fill="rgba(212,175,122,0.15)" stroke="#F0D9A8" stroke-width="1.5"/>
+          <path d="M22 14 L29 20 L36 14" stroke="#F0D9A8" stroke-width="1.2" fill="none"/>
+          <line x1="38" y1="19" x2="46" y2="19" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="42,15 46,19 42,23" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person handing off an envelope — the referral handoff moment</div>
+  </div>
+
+
+  <!-- 6: "Ref" text badge with person above -->
+  <div class="card">
+    <div class="label">6 — Ref Badge</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- badge/pill shape -->
+        <rect x="4" y="28" width="40" height="16" rx="8" fill="rgba(212,175,122,0.12)" stroke="#D4AF7A" stroke-width="1.8"/>
+        <!-- "Ref" text inside badge -->
+        <text x="24" y="40" text-anchor="middle" font-family="-apple-system, sans-serif" font-weight="800" font-size="11" fill="#D4AF7A" letter-spacing="0.5">Ref</text>
+        <!-- person above badge -->
+        <circle cx="24" cy="12" r="6" fill="rgba(212,175,122,0.12)" stroke="#F0D9A8" stroke-width="1.8"/>
+        <circle cx="24" cy="10" r="2.5" fill="#F0D9A8"/>
+        <path d="M18 19 Q24 16 30 19" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <!-- arrow on badge -->
+        <line x1="33" y1="36" x2="38" y2="36" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round"/>
+        <polyline points="35.5,33.5 38,36 35.5,38.5" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="28" width="40" height="16" rx="8" fill="rgba(212,175,122,0.12)" stroke="#D4AF7A" stroke-width="2"/>
+          <text x="24" y="40" text-anchor="middle" font-family="-apple-system, sans-serif" font-weight="800" font-size="11" fill="#D4AF7A" letter-spacing="0.5">Ref</text>
+          <circle cx="24" cy="12" r="6" fill="rgba(212,175,122,0.12)" stroke="#F0D9A8" stroke-width="2"/>
+          <circle cx="24" cy="10" r="2.5" fill="#F0D9A8"/>
+          <path d="M18 19 Q24 16 30 19" stroke="#F0D9A8" stroke-width="1.6" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person above a "Ref" pill badge — branded &amp; literal</div>
+  </div>
+
+
+  <!-- 7: Envelope with person silhouette as stamp -->
+  <div class="card">
+    <div class="label">7 — Stamped Envelope</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- envelope -->
+        <rect x="3" y="12" width="42" height="30" rx="3" fill="rgba(212,175,122,0.06)" stroke="#D4AF7A" stroke-width="1.8"/>
+        <path d="M3 12 L24 28 L45 12" stroke="#D4AF7A" stroke-width="1.5" fill="none"/>
+        <!-- stamp box in top right -->
+        <rect x="32" y="17" width="11" height="13" rx="1.5" fill="rgba(212,175,122,0.15)" stroke="#F0D9A8" stroke-width="1.2"/>
+        <!-- tiny person in stamp -->
+        <circle cx="37.5" cy="21" r="2" fill="#F0D9A8"/>
+        <path d="M34.5 28 Q37.5 26 40.5 28" stroke="#F0D9A8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <!-- arrow bottom right -->
+        <line x1="3" y1="36" x2="18" y2="36" stroke="#D4AF7A" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 2"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="3" y="12" width="42" height="30" rx="3" fill="rgba(212,175,122,0.06)" stroke="#D4AF7A" stroke-width="2"/>
+          <path d="M3 12 L24 28 L45 12" stroke="#D4AF7A" stroke-width="1.6" fill="none"/>
+          <rect x="32" y="17" width="11" height="13" rx="1.5" fill="rgba(212,175,122,0.18)" stroke="#F0D9A8" stroke-width="1.4"/>
+          <circle cx="37.5" cy="21" r="2" fill="#F0D9A8"/>
+          <path d="M34.5 28 Q37.5 26 40.5 28" stroke="#F0D9A8" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Envelope with a person as the stamp — you're the seal of approval</div>
+  </div>
+
+
+  <!-- 8: D + person inside the curve -->
+  <div class="card">
+    <div class="label">8 — Person in D</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- Bold D shape -->
+        <rect x="6" y="6" width="6" height="36" rx="2" fill="#D4AF7A"/>
+        <path d="M12 6 H22 Q42 6 42 24 Q42 42 22 42 H12 Z" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- person inside D curve -->
+        <circle cx="26" cy="18" r="4.5" fill="#F0D9A8" opacity="0.9"/>
+        <path d="M19 32 Q26 28 33 32" stroke="#F0D9A8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <!-- small forward arrow -->
+        <line x1="30" y1="24" x2="36" y2="24" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round"/>
+        <polyline points="33,21 36,24 33,27" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="6" y="6" width="6" height="36" rx="2" fill="#D4AF7A"/>
+          <path d="M12 6 H22 Q42 6 42 24 Q42 42 22 42 H12 Z" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="26" cy="18" r="4.5" fill="#F0D9A8" opacity="0.9"/>
+          <path d="M19 32 Q26 28 33 32" stroke="#F0D9A8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <line x1="30" y1="24" x2="36" y2="24" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round"/>
+          <polyline points="33,21 36,24 33,27" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person living inside the "D" — Direct as a space that holds people</div>
+  </div>
+
+
+  <!-- 9: Envelope + person walking out with arrow trail -->
+  <div class="card">
+    <div class="label">9 — Walking Out</div>
+    <div class="solo">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <!-- envelope (left, open) -->
+        <rect x="2" y="18" width="22" height="18" rx="2" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="1.6"/>
+        <path d="M2 18 L13 26 L24 18" stroke="#D4AF7A" stroke-width="1.4" fill="none"/>
+        <!-- open flap pointing up -->
+        <path d="M2 18 L13 10 L24 18" stroke="#D4AF7A" stroke-width="1.4" fill="rgba(212,175,122,0.05)" stroke-linejoin="round"/>
+        <!-- person walking right out of envelope -->
+        <circle cx="33" cy="18" r="4" stroke="#F0D9A8" stroke-width="1.8"/>
+        <path d="M33 22 L33 33" stroke="#F0D9A8" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M33 26 L38 24" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M33 26 L28 28" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M33 33 L30 42" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M33 33 L36 42" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- dotted trail from envelope to person -->
+        <line x1="24" y1="27" x2="29" y2="27" stroke="#D4AF7A" stroke-width="1.2" stroke-dasharray="2 2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+          <rect x="2" y="18" width="22" height="18" rx="2" fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="1.8"/>
+          <path d="M2 18 L13 26 L24 18" stroke="#D4AF7A" stroke-width="1.4" fill="none"/>
+          <path d="M2 18 L13 10 L24 18" stroke="#D4AF7A" stroke-width="1.4" fill="rgba(212,175,122,0.05)"/>
+          <circle cx="33" cy="18" r="4" stroke="#F0D9A8" stroke-width="2"/>
+          <path d="M33 22 L33 33" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+          <path d="M33 26 L38 24" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M33 26 L28 28" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M33 33 L30 42" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M33 33 L36 42" stroke="#F0D9A8" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person walking out of an open envelope — the referral sets you free</div>
+  </div>
+
+
+</div>
+</body>
+</html>

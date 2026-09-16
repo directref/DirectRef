@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DirectRef — Person + Arrow Variations</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0D0A07;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #F0E8D8;
+      padding: 48px 32px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #5A4A2A;
+      margin-bottom: 48px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #120E09;
+      border: 1px solid rgba(212,175,122,0.12);
+      border-radius: 16px;
+      padding: 28px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: rgba(212,175,122,0.45);
+      box-shadow: 0 0 32px rgba(212,175,122,0.08);
+    }
+
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5A4A2A;
+    }
+
+    .sidebar-preview {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0D0A07;
+      border: 1px solid rgba(212,175,122,0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 100%;
+    }
+
+    .brand-text { display: flex; flex-direction: column; gap: 2px; }
+    .brand-name { font-size: 15px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+    .brand-name .direct {
+      background: linear-gradient(160deg,#FAFAFA,#E8E8E8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand-name .ref {
+      background: linear-gradient(160deg,#F0D9A8,#D4AF7A);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand-tag { font-size: 8px; font-weight: 500; color: #5A4A2A; }
+
+    .icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: rgba(212,175,122,0.10);
+      border: 1px solid rgba(212,175,122,0.28);
+    }
+
+    /* Large solo preview */
+    .solo {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(212,175,122,0.10);
+      border: 1px solid rgba(212,175,122,0.28);
+    }
+
+    .desc {
+      font-size: 11px;
+      color: #7A6040;
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<h1>DirectRef — Person + Arrow Variations</h1>
+
+<div class="grid">
+
+  <!-- 1: Person walking into arrow -->
+  <div class="card">
+    <div class="label">1 — Walk Forward</div>
+
+    <div class="solo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <!-- head -->
+        <circle cx="13" cy="8" r="4" stroke="#D4AF7A" stroke-width="1.8"/>
+        <!-- body -->
+        <path d="M13 12 L13 22" stroke="#D4AF7A" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- arm forward -->
+        <path d="M13 15 L18 13" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- arm back -->
+        <path d="M13 15 L8 17" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- legs -->
+        <path d="M13 22 L10 30" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M13 22 L16 30" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- arrow -->
+        <line x1="21" y1="18" x2="33" y2="18" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+        <polyline points="28,13 33,18 28,23" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <circle cx="13" cy="8" r="4" stroke="#D4AF7A" stroke-width="1.8"/>
+          <path d="M13 12 L13 22" stroke="#D4AF7A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M13 15 L18 13" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M13 15 L8 17" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M13 22 L10 30" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M13 22 L16 30" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="21" y1="18" x2="33" y2="18" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="28,13 33,18 28,23" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person striding into an arrow — movement &amp; direction</div>
+  </div>
+
+  <!-- 2: Person silhouette with arrow as body -->
+  <div class="card">
+    <div class="label">2 — Arrow Body</div>
+
+    <div class="solo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <!-- head -->
+        <circle cx="18" cy="7" r="4" fill="#D4AF7A"/>
+        <!-- body = arrow pointing right -->
+        <path d="M10 16 L22 16 L22 13 L32 19 L22 25 L22 22 L10 22 Z"
+          fill="rgba(212,175,122,0.25)" stroke="#D4AF7A" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="7" r="4" fill="#D4AF7A"/>
+          <path d="M10 16 L22 16 L22 13 L32 19 L22 25 L22 22 L10 22 Z"
+            fill="rgba(212,175,122,0.2)" stroke="#D4AF7A" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person whose body IS the arrow — identity &amp; direction fused</div>
+  </div>
+
+  <!-- 3: Two people, one pointing the other -->
+  <div class="card">
+    <div class="label">3 — The Referral</div>
+
+    <div class="solo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <!-- referee (left person) -->
+        <circle cx="8" cy="9" r="3.5" stroke="#D4AF7A" stroke-width="1.6"/>
+        <path d="M8 13 Q8 20 8 22" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- pointing arm -->
+        <path d="M8 16 L18 14" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- arrowhead on arm -->
+        <polyline points="15,11.5 18,14 15,16.5" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- referred (right person) -->
+        <circle cx="27" cy="9" r="3.5" stroke="#F0D9A8" stroke-width="1.6"/>
+        <path d="M27 13 Q27 20 27 22" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- legs right -->
+        <path d="M27 22 L24.5 29" stroke="#F0D9A8" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M27 22 L29.5 29" stroke="#F0D9A8" stroke-width="1.4" stroke-linecap="round"/>
+        <!-- legs left -->
+        <path d="M8 22 L5.5 29" stroke="#D4AF7A" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M8 22 L10.5 29" stroke="#D4AF7A" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <circle cx="8" cy="9" r="3.5" stroke="#D4AF7A" stroke-width="1.6"/>
+          <path d="M8 13 Q8 20 8 22" stroke="#D4AF7A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M8 16 L18 14" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round"/>
+          <polyline points="15,11.5 18,14 15,16.5" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="27" cy="9" r="3.5" stroke="#F0D9A8" stroke-width="1.6"/>
+          <path d="M27 13 Q27 20 27 22" stroke="#F0D9A8" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M27 22 L24.5 29" stroke="#F0D9A8" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M27 22 L29.5 29" stroke="#F0D9A8" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M8 22 L5.5 29" stroke="#D4AF7A" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M8 22 L10.5 29" stroke="#D4AF7A" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">One person pointing another — the referral moment</div>
+  </div>
+
+  <!-- 4: Person launching upward + arrow -->
+  <div class="card">
+    <div class="label">4 — Launch Up</div>
+
+    <div class="solo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <!-- arrow up-right -->
+        <line x1="10" y1="28" x2="28" y2="10" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+        <polyline points="18,8 28,10 26,20" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- person on arrow path -->
+        <circle cx="12" cy="26" r="4" fill="rgba(212,175,122,0.15)" stroke="#D4AF7A" stroke-width="1.8"/>
+        <!-- person silhouette inside circle -->
+        <circle cx="12" cy="24" r="1.5" fill="#D4AF7A"/>
+        <path d="M9 29 Q12 27 15 29" stroke="#D4AF7A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <line x1="10" y1="28" x2="28" y2="10" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="18,8 28,10 26,20" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="12" cy="26" r="4" fill="rgba(212,175,122,0.15)" stroke="#D4AF7A" stroke-width="1.8"/>
+          <circle cx="12" cy="24" r="1.5" fill="#D4AF7A"/>
+          <path d="M9 29 Q12 27 15 29" stroke="#D4AF7A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person launching up-right — career trajectory &amp; growth</div>
+  </div>
+
+  <!-- 5: Person inside arrow shape -->
+  <div class="card">
+    <div class="label">5 — Person in Arrow</div>
+
+    <div class="solo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <!-- arrow chevron background -->
+        <path d="M2 6 L26 6 L34 18 L26 30 L2 30 L10 18 Z"
+          fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- person inside -->
+        <circle cx="16" cy="14" r="3.5" fill="#D4AF7A"/>
+        <path d="M10 26 Q16 22 22 26" stroke="#D4AF7A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <path d="M2 6 L26 6 L34 18 L26 30 L2 30 L10 18 Z"
+            fill="rgba(212,175,122,0.08)" stroke="#D4AF7A" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="16" cy="14" r="3.5" fill="#D4AF7A"/>
+          <path d="M10 26 Q16 22 22 26" stroke="#D4AF7A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Person framed inside an arrow — moving with purpose</div>
+  </div>
+
+  <!-- 6: Minimalist head + swoosh arrow -->
+  <div class="card">
+    <div class="label">6 — Head &amp; Swoosh</div>
+
+    <div class="solo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <!-- person head + shoulders minimal -->
+        <circle cx="13" cy="12" r="5" stroke="#D4AF7A" stroke-width="2"/>
+        <path d="M5 26 Q5 20 13 20 Q21 20 21 26" stroke="#D4AF7A" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- swoosh arrow right -->
+        <path d="M22 14 Q30 10 33 18 Q30 22 24 21" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <polyline points="28,18 33,18 31,23" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-preview">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <circle cx="13" cy="12" r="5" stroke="#D4AF7A" stroke-width="2"/>
+          <path d="M5 26 Q5 20 13 20 Q21 20 21 26" stroke="#D4AF7A" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M22 14 Q30 10 33 18 Q30 22 24 21" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <polyline points="28,18 33,18 31,23" stroke="#F0D9A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span class="direct">Direct</span><span class="ref">Ref</span></div>
+        <div class="brand-tag">Find your next job</div>
+      </div>
+    </div>
+    <div class="desc">Classic person silhouette with a dynamic swoosh arrow</div>
+  </div>
+
+</div>
+
+</body>
+</html>
