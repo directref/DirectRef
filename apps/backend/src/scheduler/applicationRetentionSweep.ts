@@ -37,9 +37,16 @@ async function eraseInactiveClosedApplications(): Promise<number> {
     .where(and(
       inArray(applications.status, [...CLOSED_STATUSES]),
       lte(applications.updatedAt, cutoff),
+      // cutoff goes in as an ISO string with an explicit cast, NOT as a Date.
+      // Typed helpers like lte() above know the column and map a Date for you;
+      // inside a raw sql`` template there is no column to infer from, so a bare
+      // Date reaches postgres-js untranslated and the driver throws
+      // "The string argument must be of type string ... Received an instance of
+      // Date" — which the sweep's own try/catch then swallowed.
       sql`NOT EXISTS (
         SELECT 1 FROM application_messages m
-        WHERE m.application_id = ${applications.id} AND m.created_at > ${cutoff}
+        WHERE m.application_id = ${applications.id}
+          AND m.created_at > ${cutoff.toISOString()}::timestamptz
       )`,
     ));
 

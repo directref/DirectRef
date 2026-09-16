@@ -1,7 +1,7 @@
 {
   "name": "directref-backend",
   "version": "1.0.0",
-  "description": "DirectRef — referral-first job network API",
+  "description": "DirectRef \u2014 referral-first job network API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
@@ -21,7 +21,9 @@
     "docker:logs": "docker-compose logs -f postgres",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:db:up": "docker compose up -d postgres-test",
+    "test:db:down": "docker compose rm -sfv postgres-test"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
