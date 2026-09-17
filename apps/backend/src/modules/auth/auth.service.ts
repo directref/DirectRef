@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import { AppError } from '../../middleware/errorHandler';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../../services/email';
 import { autoVerifiedWorkEmailFields } from '../../services/companyMatch';
-import { generateInviteCode } from '../invites/invites.service';
+import { generateUniqueInviteCode } from '../invites/invites.service';
 import { grantSignupCredits } from '../credits/credits.service';
 import type { RegisterDto } from './auth.schemas';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -33,7 +33,9 @@ export async function register(dto: RegisterDto): Promise<User> {
 
   const passwordHash = await bcrypt.hash(dto.password, 12);
   const emailVerifyToken = crypto.randomBytes(32).toString('hex');
-  const inviteCode = generateInviteCode(dto.fullName);
+  // Checked against the table, not just hoped to be unique — invite_code is
+  // UNIQUE and a clash used to surface as a 500 at signup.
+  const inviteCode = await generateUniqueInviteCode(dto.fullName);
 
   const hasEmailService = !!env.RESEND_API_KEY && env.RESEND_API_KEY !== 're_xxxxxxxxxxxxxxxxxxxx';
 

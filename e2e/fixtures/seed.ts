@@ -35,16 +35,18 @@ async function register(opts: { emailPrefix: string; fullName: string; isReferre
   return { email, password: TEST_PASSWORD, fullName: opts.fullName, api };
 }
 
-/** First names must be SHORT and unique. generateInviteCode builds
- *  `<firstname>-<4 hex>` into a varchar(16) column, so any first name over 11
- *  characters overflows and registration 500s; and the code is UNIQUE with no
- *  retry, so a suite where everyone shares a first name eventually collides.
- *  Both are real product bugs this suite found — see the workplan. Until they
- *  are fixed, test names stay short and distinct. */
-const shortName = () => `T${Math.random().toString(36).slice(2, 7)}`; // 6 chars
+/** Deliberately AWKWARD names. This suite found two registration bugs in
+ *  generateInviteCode — a first name over 11 characters overflowed the
+ *  varchar(16) invite_code column, and a non-Latin name stripped to empty so
+ *  every such user shared one namespace. Both are fixed now, and the fixtures
+ *  keep using the shapes that broke it so a regression fails here too rather
+ *  than only in the unit tests. */
+const AWKWARD_NAMES = ['Konstantinos', 'Aleksandrina', 'יוסי', 'Владимир', 'Bartholomew', 'Sam'];
+const awkwardName = () =>
+  `${AWKWARD_NAMES[Math.floor(Math.random() * AWKWARD_NAMES.length)]} Tester`;
 
 export const createSeeker = () =>
-  register({ emailPrefix: 'seeker', fullName: `${shortName()} Tester`, isReferrer: false });
+  register({ emailPrefix: 'seeker', fullName: awkwardName(), isReferrer: false });
 
 /**
  * A referrer who can actually post.
@@ -56,7 +58,7 @@ export const createSeeker = () =>
  * delivery is genuine.
  */
 export async function createReferrer(companyDomain = 'acme.test'): Promise<TestUser & { companyDomain: string }> {
-  const user = await register({ emailPrefix: 'referrer', fullName: `${shortName()} Tester`, isReferrer: true });
+  const user = await register({ emailPrefix: 'referrer', fullName: awkwardName(), isReferrer: true });
 
   const workEmail = `${unique('rae')}@${companyDomain}`;
   const submit = await user.api.post('/api/users/me/work-email', { data: { workEmail } });

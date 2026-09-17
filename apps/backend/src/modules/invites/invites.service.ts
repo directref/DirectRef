@@ -11,11 +11,56 @@ function generateToken(): string {
   return crypto.randomBytes(24).toString('hex');
 }
 
-/** Generate a short invite code from name (e.g. "maya-x7k2") */
+/** users.invite_code is varchar(16) AND UNIQUE. Both halves matter: exceed the
+ *  length and the INSERT throws, collide and the INSERT throws — and either way
+ *  the user just sees "An unexpected error occurred" and cannot create an
+ *  account. */
+const CODE_MAX_LEN = 16;
+const SUFFIX_CHARS = 6; // 3 random bytes → 16.7M values per prefix
+const MAX_PREFIX_LEN = CODE_MAX_LEN - 1 - SUFFIX_CHARS; // 9, leaving room for "-"
+
+/**
+ * A short, human-ish invite code derived from a first name (e.g. "maya-x7k2f1").
+ *
+ * The prefix is TRUNCATED and the result is always within varchar(16). It used
+ * to be `${first}-${4 hex}` with no bound, so anyone whose first name ran past
+ * 11 characters — Konstantinos, Aleksandrina — overflowed the column and simply
+ * could not register.
+ *
+ * A name written in a non-Latin script strips to nothing (Hebrew, Arabic,
+ * Cyrillic...). That used to yield "-a1b2", funnelling every such user into one
+ * shared 65k namespace — on a product built for Israeli tech, most of them.
+ * Those now get a pure-random code instead: no shared prefix, no readability to
+ * lose, and the full keyspace to themselves.
+ *
+ * Not unique on its own — use generateUniqueInviteCode.
+ */
 export function generateInviteCode(fullName: string): string {
-  const first = fullName.split(' ')[0].toLowerCase().replace(/[^a-z]/g, '');
-  const suffix = crypto.randomBytes(2).toString('hex');
-  return `${first}-${suffix}`;
+  const first = (fullName.split(' ')[0] ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const prefix = first.slice(0, MAX_PREFIX_LEN);
+  if (!prefix) return crypto.randomBytes(6).toString('hex'); // 12 chars, no prefix to speak of
+  return `${prefix}-${crypto.randomBytes(SUFFIX_CHARS / 2).toString('hex')}`;
+}
+
+/**
+ * A code that is actually free, checked against the table before use.
+ *
+ * Entropy alone is not an answer to a UNIQUE constraint: the old code had none
+ * of this and a collision surfaced as a 500 at signup. After a few attempts it
+ * gives up on readability and returns a full-width random code, which cannot
+ * realistically collide.
+ */
+export async function generateUniqueInviteCode(fullName: string): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = generateInviteCode(fullName);
+    const [taken] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.inviteCode, code))
+      .limit(1);
+    if (!taken) return code;
+  }
+  return crypto.randomBytes(CODE_MAX_LEN / 2).toString('hex'); // exactly 16 chars
 }
 
 /** Get or create the user's personal invite link token */
