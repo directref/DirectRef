@@ -27,6 +27,16 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().default(''),
   EMAIL_FROM: z.string().default('support@direct-ref.com'),
 
+  // Rate limits. Defaults are exactly the values these were hard-coded to, so
+  // production behaviour is unchanged unless a var is explicitly set. They are
+  // configurable because an automated suite legitimately registers and uploads
+  // far faster than a person, and because ops wants to tune these without a
+  // deploy. NEVER raise them in production.
+  RATE_LIMIT_AUTH_MAX: z.coerce.number().default(10),
+  RATE_LIMIT_API_MAX: z.coerce.number().default(1500),
+  RATE_LIMIT_UPLOAD_MAX: z.coerce.number().default(10),
+  RATE_LIMIT_SCRAPE_MAX: z.coerce.number().default(30),
+
   ADMIN_SECRET: z.string().default('directref_admin_2024_secret_key'),
   UPLOADS_DIR: z.string().default('./uploads'),
   MAX_CV_SIZE_MB: z.coerce.number().default(10),

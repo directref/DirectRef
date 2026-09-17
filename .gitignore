@@ -18,6 +18,7 @@ uploads/
 
 # test output
 .test-uploads/
+.e2e-uploads/
 coverage/
 playwright-report/
 test-results/

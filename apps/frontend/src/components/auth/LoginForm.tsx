@@ -63,11 +63,18 @@ export function LoginForm({ next }: LoginFormProps) {
 
       {/* Password with show/hide toggle */}
       <div className="w-full">
-        <label className="block text-xs font-semibold text-text-secondary mb-1.5">
+        {/* htmlFor/id are what tie this label to its input. The shared <Input>
+            does this for you; this field is hand-rolled for the show/hide
+            toggle and was missing it, so screen readers announced an unlabelled
+            password box and clicking "Password" focused nothing. */}
+        <label htmlFor="login-password" className="block text-xs font-semibold text-text-secondary mb-1.5">
           Password
         </label>
         <div className="relative">
           <input
+            id="login-password"
+            name="password"
+            autoComplete="current-password"
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}

@@ -87,6 +87,7 @@ export function FileDropzone({
       {error && <p className="mt-1 text-xs text-crit">{error}</p>}
       <input
         ref={inputRef}
+        data-testid="cv-file-input"
         type="file"
         accept={accept}
         className="hidden"

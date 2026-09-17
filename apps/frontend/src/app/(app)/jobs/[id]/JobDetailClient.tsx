@@ -128,6 +128,7 @@ export default function JobDetailClient({ data }: { data: JobWithReferrer }) {
                 <>
                   <button
                     type="button"
+                    data-testid="open-send-cv"
                     onClick={() => setSendCVOpen(true)}
                     className="w-full rounded-md bg-gold-300 hover:bg-gold-400 text-[#0A0A0A] text-[14px] font-semibold px-4 py-3 transition-colors"
                   >

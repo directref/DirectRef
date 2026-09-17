@@ -269,6 +269,7 @@ export function SendCVModal({ open, onClose, onSuccess, job, referrers }: SendCV
             <div className="px-6 pb-6">
               <button
                 type="button"
+                data-testid="submit-cv"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 className="w-full rounded-[10px] bg-gold-300 hover:bg-gold-400 disabled:opacity-50 py-3 text-[14px] font-semibold text-[#0A0A0A] transition-colors"
