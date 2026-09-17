@@ -85,6 +85,13 @@ app.get('/health', async (_req, res) => {
   const status = dbOk && uploadsOk ? 'ok' : 'degraded';
   res.status(dbOk ? 200 : 503).json({
     status,
+    // Which build is actually serving. Railway injects this on every deploy,
+    // no configuration needed. Without it a 200 only proves "some version of
+    // the API is alive" — a failed build, a deploy still in flight, or a
+    // rolled-back release all answer 200 from the OLD code, so a post-deploy
+    // check can pass while the thing you just shipped is nowhere near
+    // production. The smoke test compares this against the SHA it deployed.
+    commit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'unknown',
     timestamp: new Date().toISOString(),
     checks: {
       database: dbOk ? 'connected' : 'disconnected',
