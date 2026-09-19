@@ -140,7 +140,7 @@ function layout(title: string, preheader: string, blocks: string) {
   <tr>
     <td style="padding:22px 32px 28px 32px;border-top:1px solid ${color.border};">
       <p style="margin:0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
-        You're getting this because you use DirectRef. A referral is a human handing your C.V. to
+        You're getting this because you use DirectRef. A referral is a human handing your CV to
         the right person &mdash; it is not a guaranteed interview.
       </p>
       <p style="margin:10px 0 0 0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
@@ -171,10 +171,10 @@ export async function sendVerificationEmail(to: string, token: string, name: str
     html: layout(subject, 'Confirm your email to finish setting up your account.', [
       eyebrow('Account'),
       heading(`Welcome to DirectRef, ${esc(name)}`),
-      text(`DirectRef puts your C.V. in a real person's hands instead of an applicant-tracking queue. Confirm your email to finish setting up your account.`),
+      text(`DirectRef puts your CV in a real person's hands instead of an applicant-tracking queue. Confirm your email to finish setting up your account.`),
       button(verifyUrl, 'Confirm my email'),
       text('This link is valid for 24 hours.'),
-      text(`If you didn't create a DirectRef account, you can ignore this email and nothing happens.`),
+      text(`If you didn't create a DirectRef account, you can ignore this email — nothing will happen.`),
     ].join('\n')),
   });
 }
@@ -208,7 +208,7 @@ export async function sendWorkEmailVerificationEmail(to: string, name: string, t
     html: layout(subject, 'Confirm this is you — the link is valid for 1 hour.', [
       eyebrow('Account'),
       heading(`Confirm it's you, ${esc(name)}`),
-      text(`We use your work email to confirm which company you work at, so you can post jobs for that company. Click below to confirm ${strong(to)} is yours.`),
+      text(`We use your work email to confirm where you work, so you can post jobs for that company. Click below to confirm ${strong(to)} is yours.`),
       button(verifyUrl, 'Confirm my work email'),
       text('This link is valid for 1 hour.'),
       text(`If you didn't request this, you can safely ignore this email — nothing changes.`),
@@ -229,18 +229,18 @@ export async function sendCVNotificationEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: referrerEmail,
-    subject: `New C.V. for ${jobTitle}`,
-    html: layout(`New C.V. for ${jobTitle}`, `${seekerName} sent a C.V. for your posted role.`, [
-      eyebrow('C.V. inbox'),
+    subject: `New CV for ${jobTitle}`,
+    html: layout(`New CV for ${jobTitle}`, `${seekerName} sent a CV for your posted role.`, [
+      eyebrow('CV inbox'),
       badge('Awaiting your review', 'gold'),
-      heading(`${esc(seekerName)} sent you a C.V.`),
-      text(`Someone applied to ${strong(jobTitle)} at ${strong(companyName)} — the role you posted. Review the C.V. and, if it's a fit, submit it through your internal referral programme.`),
+      heading(`${esc(seekerName)} sent you a CV`),
+      text(`${strong(seekerName)} applied to ${strong(jobTitle)} at ${strong(companyName)} — the role you posted. Review the CV and, if it's a fit, submit it through your internal referral program.`),
       steps([
-        'Open the C.V. in your inbox',
+        'Open the CV in your inbox',
         `Download it if it's a fit`,
         'Submit it internally and mark the status',
       ]),
-      button(dashboardUrl, 'Review the C.V.'),
+      button(dashboardUrl, 'Review the CV'),
       text('You have 5 days to act before the application expires.'),
     ].join('\n')),
   });
@@ -259,12 +259,12 @@ export async function sendCVViewedEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: seekerEmail,
-    subject: `${referrerName} viewed your C.V.`,
-    html: layout(`${referrerName} viewed your C.V.`, 'A human just opened your C.V.', [
+    subject: `${referrerName} viewed your CV`,
+    html: layout(`${referrerName} viewed your CV`, 'A human just opened your CV.', [
       eyebrow('Application update'),
       badge('Viewed', 'info'),
-      heading('Your C.V. was opened'),
-      text(`${strong(referrerName)} opened your C.V. for ${strong(jobTitle)} at ${strong(companyName)}. The next update comes when they download it to refer you — or let you know it's not a fit.`),
+      heading('Your CV was opened'),
+      text(`${strong(referrerName)} opened your CV for ${strong(jobTitle)} at ${strong(companyName)}. The next update comes when they download it to refer you — or mark it as not a fit.`),
       button(applicationsUrl, 'Track this application'),
     ].join('\n')),
   });
@@ -283,14 +283,14 @@ export async function sendCVForwardedEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: seekerEmail,
-    subject: `Your C.V. was forwarded to HR at ${companyName}`,
-    html: layout(`Your C.V. was forwarded to HR at ${companyName}`, 'Your C.V. is with the HR team now.', [
+    subject: `Your CV was forwarded to HR at ${companyName}`,
+    html: layout(`Your CV was forwarded to HR at ${companyName}`, 'Your CV is with the HR team now.', [
       eyebrow('Application update'),
       badge('Sent to HR', 'success'),
-      heading('Your C.V. went to HR'),
-      text(`${strong(referrerName)} forwarded your C.V. for ${strong(jobTitle)} at ${strong(companyName)} to their HR team.`),
+      heading('Your CV went to HR'),
+      text(`${strong(referrerName)} forwarded your CV for ${strong(jobTitle)} at ${strong(companyName)} to their HR team.`),
       button(applicationsUrl, 'Track this application'),
-      text(`What we promise: your C.V. reaches a human. What we can't promise: an interview. That call is HR's.`),
+      text(`What we guarantee: your CV reaches a real employee. What we can't guarantee: an interview. That decision belongs to HR.`),
     ].join('\n')),
   });
 }
@@ -309,14 +309,14 @@ export async function sendReminderEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: referrerEmail,
-    subject: `Still waiting: ${seekerName}'s C.V.`,
-    html: layout(`Still waiting: ${seekerName}'s C.V.`, 'One day in, four days left to act.', [
+    subject: `Still waiting: ${seekerName}'s CV`,
+    html: layout(`Still waiting: ${seekerName}'s CV`, 'One day in, four days left to act.', [
       eyebrow('Reminder · Day 1'),
       badge('Awaiting your review', 'gold'),
-      heading('A C.V. has been waiting a day'),
-      text(`${strong(seekerName)} is waiting on ${strong(jobTitle)}. A minute of your time either moves them forward or frees them up to try elsewhere.`),
+      heading('A CV has been waiting a day'),
+      text(`${strong(seekerName)} is waiting for feedback on ${strong(jobTitle)}. Taking a minute now either moves them forward or lets them explore other options.`),
       card('4 days left', ['After 5 days the application closes automatically.'], 'neutral'),
-      button(inboxUrl, 'Open my C.V. inbox'),
+      button(inboxUrl, 'Open my CV inbox'),
     ].join('\n')),
   });
 }
@@ -333,23 +333,23 @@ export async function sendSecondReminderEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: referrerEmail,
-    subject: `2 days on: ${seekerName}'s C.V. for ${jobTitle}`,
-    html: layout(`2 days on: ${seekerName}'s C.V. for ${jobTitle}`, '3 days before it expires.', [
+    subject: `2 days on: ${seekerName}'s CV for ${jobTitle}`,
+    html: layout(`2 days on: ${seekerName}'s CV for ${jobTitle}`, '3 days before it expires.', [
       eyebrow('Reminder · Day 2'),
       badge('Awaiting your review', 'gold'),
       heading(`It's been 2 days — 3 to go`),
-      text(`${strong(seekerName)}'s C.V. for ${strong(jobTitle)} is still untouched. Download it and submit it internally, or mark it as not a fit so they know where they stand.`),
+      text(`${strong(seekerName)}'s CV for ${strong(jobTitle)} is still untouched. Download it and submit it internally, or mark it as not a fit so they know where they stand.`),
       steps([
-        'Download the C.V.',
-        'Submit it through your referral programme',
-        `Or mark it not a fit — an honest no helps too`,
+        'Download the CV',
+        'Submit it through your referral program',
+        `Or mark it as not a fit — an honest no helps too`,
       ]),
-      button(inboxUrl, 'Open my C.V. inbox'),
+      button(inboxUrl, 'Open my CV inbox'),
     ].join('\n')),
   });
 }
 
-/** Day 5 — the application auto-closed with no response. Sending a C.V. is
+/** Day 5 — the application auto-closed with no response. Sending a CV is
  *  free (credits only gate the referrer's job-posting side), so this is
  *  purely a status update, not a refund notice. Reused by both clocks
  *  (never looked at it, or downloaded but never confirmed). */
@@ -369,7 +369,7 @@ export async function sendExpiredEmail(
       eyebrow('Application update'),
       badge('Expired', 'expired'),
       heading('No response, so we closed this one out'),
-      text(`${strong(referrerName)} didn't act on your C.V. for ${strong(jobTitle)} within 5 days, so we closed the application. Nothing was submitted on your behalf, and nothing was shared with the company.`),
+      text(`${strong(referrerName)} didn't act on your CV for ${strong(jobTitle)} within 5 days, so we closed the application. Nothing was submitted on your behalf, and nothing was shared with the company.`),
       button(`${env.FRONTEND_URL}/jobs`, 'Find another referrer'),
       link(applicationsUrl, 'See all my applications'),
     ].join('\n')),
@@ -388,17 +388,17 @@ export async function sendReferrerExpiredEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: referrerEmail,
-    subject: `Expired: ${seekerName}'s C.V. for ${jobTitle}`,
-    html: layout(`Expired: ${seekerName}'s C.V. for ${jobTitle}`, 'No action in 5 days, so we closed it out.', [
+    subject: `Expired: ${seekerName}'s CV for ${jobTitle}`,
+    html: layout(`Expired: ${seekerName}'s CV for ${jobTitle}`, 'No action in 5 days, so we closed it out.', [
       eyebrow('Reminder · Day 5'),
       badge('Expired', 'expired'),
       heading('This application has expired'),
-      text(`${strong(seekerName)}'s C.V. for ${strong(jobTitle)} closed after 5 days with no action. It no longer appears in your inbox.`),
+      text(`${strong(seekerName)}'s CV for ${strong(jobTitle)} closed after 5 days with no action. It no longer appears in your inbox.`),
       card('Keeping your response rate healthy', [
-        'Seekers see your response rate before choosing who to send their C.V. to.',
+        'Seekers see your response rate before choosing who to send their CV to.',
         'Acting — even a decline — keeps it strong.',
       ], 'neutral'),
-      button(inboxUrl, 'See my open C.V.s'),
+      button(inboxUrl, 'See my open CVs'),
     ].join('\n')),
   });
 }
@@ -417,18 +417,18 @@ export async function sendCVDownloadedEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: seekerEmail,
-    subject: `${referrerName} downloaded your C.V. for ${jobTitle}`,
-    html: layout(`${referrerName} downloaded your C.V. for ${jobTitle}`, `It's out of the queue and in a human's hands.`, [
+    subject: `${referrerName} downloaded your CV for ${jobTitle}`,
+    html: layout(`${referrerName} downloaded your CV for ${jobTitle}`, `It's out of the queue and in a human's hands.`, [
       eyebrow('Application update'),
       badge('Downloaded', 'success'),
-      heading(`Your C.V. is in a person's hands`),
-      text(`${strong(referrerName)} downloaded your C.V. for ${strong(jobTitle)} at ${strong(companyName)}. The next step is theirs: submitting it through their company's internal referral programme.`),
+      heading(`Your CV is in a person's hands`),
+      text(`${strong(referrerName)} downloaded your CV for ${strong(jobTitle)} at ${strong(companyName)}. The next step is theirs: submitting it through their company's internal referral program.`),
       card(`${esc(jobTitle)} &middot; ${esc(companyName)}`, [
         `Referrer: ${esc(referrerName)}`,
         'Status: Downloaded — awaiting internal submission',
       ], 'neutral'),
       button(applicationsUrl, 'Track this application'),
-      text(`What we promise: your C.V. reaches a human. What we can't promise: an interview. That call is HR's.`),
+      text(`What we guarantee: your CV reaches a real employee. What we can't guarantee: an interview. That decision belongs to HR.`),
     ].join('\n')),
   });
 }
@@ -445,13 +445,13 @@ export async function sendSubmitReminderEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: referrerEmail,
-    subject: `Did you submit ${seekerName}'s C.V. internally?`,
-    html: layout(`Did you submit ${seekerName}'s C.V. internally?`, 'Two days since you downloaded the C.V. — one tap closes the loop.', [
+    subject: `Did you submit ${seekerName}'s CV internally?`,
+    html: layout(`Did you submit ${seekerName}'s CV internally?`, 'Two days since you downloaded the CV — one tap updates the seeker.', [
       eyebrow('Status check · 48h after download'),
       badge('Downloaded', 'info'),
       heading('Did it make it into your system?'),
-      text(`You downloaded ${strong(seekerName)}'s C.V. for ${strong(jobTitle)} two days ago. If you've submitted it through your internal referral programme, mark it in DirectRef — that's the update they're waiting for.`),
-      card('Two taps, and they know', [
+      text(`You downloaded ${strong(seekerName)}'s CV for ${strong(jobTitle)} two days ago. If you've submitted it through your internal referral program, mark it in DirectRef — that's the update they're waiting for.`),
+      card('One tap, and they know', [
         'Submitted internally &rarr; we notify the seeker it reached HR.',
         'Not a fit &rarr; we close it out honestly, and they know where they stand.',
       ], 'info'),
@@ -472,13 +472,13 @@ export async function sendSubmitFollowupEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: referrerEmail,
-    subject: `Last check: did ${seekerName}'s C.V. get submitted?`,
-    html: layout(`Last check: did ${seekerName}'s C.V. get submitted?`, '2 days before this resets automatically.', [
+    subject: `Last check: did ${seekerName}'s CV get submitted?`,
+    html: layout(`Last check: did ${seekerName}'s CV get submitted?`, '2 days before this resets automatically.', [
       eyebrow('Status check · Day 3'),
       badge('Downloaded', 'info'),
       heading('Last check: did it go in?'),
-      text(`${strong(seekerName)}'s C.V. for ${strong(jobTitle)} at ${strong(companyName)} is still marked as downloaded, not submitted.`),
-      card('2 days left', ['After that this resets automatically and the application closes.'], 'gold'),
+      text(`${strong(seekerName)}'s CV for ${strong(jobTitle)} at ${strong(companyName)} is still marked as downloaded, not submitted.`),
+      card('2 days left', ['After 2 days, this application will automatically close.'], 'gold'),
       button(inboxUrl, 'Update the status'),
     ].join('\n')),
   });
@@ -496,12 +496,12 @@ export async function sendInternallySubmittedEmail(
   await resend.emails.send({
     from: env.EMAIL_FROM,
     to: seekerEmail,
-    subject: `Your C.V. was submitted internally at ${companyName}`,
-    html: layout(`Your C.V. was submitted internally at ${companyName}`, `It's in their referral system — the ball is in HR's court now.`, [
+    subject: `Your CV was submitted internally at ${companyName}`,
+    html: layout(`Your CV was submitted internally at ${companyName}`, `It's in their referral system — the ball is in HR's court now.`, [
       eyebrow('Application update'),
       badge('Submitted internally', 'success'),
       heading(`It's in their system`),
-      text(`${strong(referrerName)} confirmed your C.V. for ${strong(jobTitle)} was submitted through ${strong(companyName)}'s internal referral programme.`),
+      text(`${strong(referrerName)} confirmed your CV for ${strong(jobTitle)} was submitted through ${strong(companyName)}'s internal referral program.`),
       card('What happens next', [
         'HR reviews internal referrals directly.',
         `Interview decisions are theirs — we'll leave it in their hands. Good luck!`,
@@ -547,14 +547,14 @@ export async function sendJobDeletionWarningEmail(
     from: env.EMAIL_FROM,
     to: referrerEmail,
     subject: `${jobTitle} will be deleted in 3 days`,
-    html: layout(`${jobTitle} will be deleted in 3 days`, `It's been inactive for 27 days — reactivate it to keep it.`, [
+    html: layout(`${jobTitle} will be deleted in 3 days`, `It's been inactive for 27 days — reactivate it to keep it live.`, [
       eyebrow('Job posting'),
       badge('Inactive · 3 days left', 'expired'),
       heading('This posting is about to be deleted'),
       text(`${strong(jobTitle)} at ${strong(companyName)} has been inactive for 27 days. In 3 days it will be ${strong('permanently deleted')}.`),
       card('Want to keep it?', [
         'Reactivate the posting any time before then and nothing is lost.',
-        'Applications already sent to it are not deleted with it — each one is kept until it closes, then erased after 30 days of inactivity.',
+        'Each application is kept until it closes, then deleted after 30 days.',
         'Once the posting is deleted, there\'s no way to recover it.',
       ], 'expired'),
       button(jobsUrl, 'Reactivate this posting'),

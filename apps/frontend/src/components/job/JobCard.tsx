@@ -122,7 +122,7 @@ export function JobCard({ data }: JobCardProps) {
                   onClick={() => setSendCVOpen(true)}
                   className="rounded-md bg-gold-300 hover:bg-gold-400 text-[13px] font-semibold text-[#0A0A0A] px-3.5 py-2 transition-colors"
                 >
-                  Send my C.V.
+                  Send my CV
                 </button>
               ) : (
                 <span className="rounded-md bg-jobs-chip-bg text-jobs-ink-muted text-[12.5px] font-semibold px-3 py-2 cursor-not-allowed">

@@ -132,7 +132,7 @@ export default function JobDetailClient({ data }: { data: JobWithReferrer }) {
                     onClick={() => setSendCVOpen(true)}
                     className="w-full rounded-md bg-gold-300 hover:bg-gold-400 text-[#0A0A0A] text-[14px] font-semibold px-4 py-3 transition-colors"
                   >
-                    Send my C.V.
+                    Send my CV
                   </button>
                   <p className="mt-2 text-[12.5px] text-jobs-ink-muted text-center">
                     {referrers.length > 1
