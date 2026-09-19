@@ -116,7 +116,7 @@ export default function CreditsPage() {
 
       <h1 className="text-[26px] font-bold text-text-primary mb-1">Buy credits</h1>
       <p className="text-sm text-text-secondary mb-8">
-        1 credit sends a C.V. or posts a job. Top up whenever your free monthly credit runs out.
+        1 credit sends a CV or posts a job. Top up whenever your free monthly credit runs out.
       </p>
 
       <div className="grid sm:grid-cols-3 gap-5 mb-8">

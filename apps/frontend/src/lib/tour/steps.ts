@@ -20,13 +20,13 @@ export type TourStep = {
 
 const isJobDetailRoute = (pathname: string) => pathname.startsWith('/jobs/') && pathname !== '/jobs/post';
 
-// The eligible-card lookup (has a visible "Send my C.V." button — i.e. not
+// The eligible-card lookup (has a visible "Send my CV" button — i.e. not
 // already applied to, not the user's own posting, not closed) is shared by
 // the two steps that need it: one to point at the card, one to navigate
 // into it. Kept as one function so they can never disagree on which card.
 const findEligibleJobCard = (): Element | null => {
   const sendButton = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent?.trim() === 'Send my C.V.',
+    (b) => b.textContent?.trim() === 'Send my CV',
   );
   return sendButton?.closest('[class*="bg-jobs-surface"]') ?? null;
 };

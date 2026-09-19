@@ -3,7 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import type { CreditBalance } from './types';
 
 /** Copy for the credits-hint line shown under "Post Job" — credits currently
- *  gate the referrer side only; sending a C.V. doesn't spend one. */
+ *  gate the referrer side only; sending a CV doesn't spend one. */
 export function creditHintText(balance: CreditBalance | null | undefined): string {
   if (!balance) return '';
   if (balance.total > 0) {

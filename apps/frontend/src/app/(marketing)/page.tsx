@@ -53,7 +53,7 @@ const phases = [
     label: 'Phase 2 · Getting it submitted',
     clock: null,
     steps: [
-      { eyebrow: 'Downloaded', title: 'Your referrer downloads it', desc: "The referrer downloads your CV to submit it through their company's internal referral programme." },
+      { eyebrow: 'Downloaded', title: 'Your referrer downloads it', desc: "The referrer downloads your CV to submit it through their company's internal referral program." },
       { eyebrow: 'With HR', title: "It lands on the recruiter's desk", desc: "Your CV is in the hands of the hiring team. From here it's their call: if you fit the role, they contact you directly." },
     ],
     close: 'We chase the confirmation for you. Two days after the download we remind your referrer to put your CV through their internal process and mark it submitted here. If that confirmation never comes, we close the application and tell you.',
@@ -89,7 +89,7 @@ async function getSampleJobs(): Promise<SampleJob[]> {
 
 const doPoints = [
   'Put your CV in the hands of a real employee inside the company.',
-  'Get it submitted through their internal referral programme, onto the recruiter’s desk.',
+  'Get it submitted through their internal referral program, onto the recruiter’s desk.',
   'Notify you at every step: submitted, viewed, downloaded, or declined.',
   'Chase your referrer on a fixed clock, and close the application and tell you if they never answer.',
 ];
