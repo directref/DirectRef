@@ -37,61 +37,6 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - the public jobs sample is reachable and well-shaped
 - an unauthenticated request cannot reach another user's data
 
-### the referral flow
-
-`@apply` `@refer` `@smoke`
-
-| | |
-|---|---|
-| Push gate | always |
-| Nightly | yes |
-| Production smoke | no — this group writes |
-
-- a seeker sends a C.V., and the referrer receives it and marks it submitted
-- a seeker cannot read another seeker's application
-
-### registration and login
-
-`@auth` `@smoke`
-
-| | |
-|---|---|
-| Push gate | always |
-| Nightly | yes |
-| Production smoke | no — this group writes |
-
-- a new seeker can register and lands in the app
-- an existing user can log in, stays logged in across a reload, and can log out
-- a wrong password is rejected and does not let anyone in
-- an anonymous visitor is sent to login when reaching for the app
-
-### referrer declines
-
-`@refer`
-
-| | |
-|---|---|
-| Push gate | when application or job code changes |
-| Nightly | yes |
-| Production smoke | no — this group writes |
-
-- "Not a fit" closes the application, and the seeker keeps their credits
-- a stranger cannot decline someone else's application
-
-### seeker withdraws
-
-`@apply`
-
-| | |
-|---|---|
-| Push gate | when application or job code changes |
-| Nightly | yes |
-| Production smoke | no — this group writes |
-
-- can pull a C.V. back before it has been opened
-- cannot withdraw once the referrer has downloaded it
-- one seeker cannot withdraw another seeker's application
-
 ### in-app messaging
 
 `@messaging`
@@ -122,6 +67,61 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - /privacy renders
 - the site is not indexable while the beta is closed
 
+### referrer declines
+
+`@refer`
+
+| | |
+|---|---|
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- "Not a fit" closes the application, and the seeker keeps their credits
+- a stranger cannot decline someone else's application
+
+### registration and login
+
+`@auth` `@smoke`
+
+| | |
+|---|---|
+| Push gate | always |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a new seeker can register and lands in the app
+- an existing user can log in, stays logged in across a reload, and can log out
+- a wrong password is rejected and does not let anyone in
+- an anonymous visitor is sent to login when reaching for the app
+
+### seeker withdraws
+
+`@apply`
+
+| | |
+|---|---|
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- can pull a C.V. back before it has been opened
+- cannot withdraw once the referrer has downloaded it
+- one seeker cannot withdraw another seeker's application
+
+### the referral flow
+
+`@apply` `@refer` `@smoke`
+
+| | |
+|---|---|
+| Push gate | always |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a seeker sends a C.V., and the referrer receives it and marks it submitted
+- a seeker cannot read another seeker's application
+
 ---
 
 ## Backend integration (vitest) — 70 scenarios
@@ -132,6 +132,29 @@ because nobody waits five days.
 
 Runs on the nightly, and on any push touching `apps/backend/**`. Never runs
 against production.
+
+### `src/modules/credits/credits.test.ts`
+
+**credits — spending**
+
+- a posting costs exactly one
+- spends the OLDEST grant first
+- refuses at zero rather than going negative
+
+**credits — the monthly grant**
+
+- gives +1 to a user who has not been granted this month
+- is idempotent — running the sweep repeatedly grants once per month
+- credits accumulate and never expire
+
+**credits — the posting gate**
+
+- a referrer can post five times and is blocked on the sixth
+
+**credits — what a new account gets**
+
+- grants 5 at signup
+- stamps the signup month so the monthly sweep does not also grant
 
 ### `src/modules/invites/inviteCode.test.ts`
 
@@ -165,28 +188,47 @@ against production.
 - two people sharing a first name both get in
 - two people with Hebrew names both get in
 
-### `src/modules/credits/credits.test.ts`
+### `src/modules/users/deleteAccount.test.ts`
 
-**credits — what a new account gets**
+**deleting a referrer**
 
-- grants 5 at signup
-- stamps the signup month so the monthly sweep does not also grant
+- removes the account, its postings, and the applications on them
+- tells each affected seeker BEFORE their application disappears
+- unlinks every C.V. file the account touched
+- takes the message threads with it
 
-**credits — spending**
+**deleting a seeker**
 
-- a posting costs exactly one
-- spends the OLDEST grant first
-- refuses at zero rather than going negative
+- removes their applications and C.V. copies but leaves the posting standing
+- removes the profile C.V. too, not just application copies
 
-**credits — the posting gate**
+**deleting an account — edge cases**
 
-- a referrer can post five times and is blocked on the sixth
+- works for an account with nothing attached
+- completes even when a C.V. file is already gone
+- rejects an account that does not exist
 
-**credits — the monthly grant**
+### `src/scheduler/applicationRetentionSweep.test.ts`
 
-- gives +1 to a user who has not been granted this month
-- is idempotent — running the sweep repeatedly grants once per month
-- credits accumulate and never expire
+**retention — erasing closed, inactive applications**
+
+- erases a rejected application after 30 days of inactivity
+- erases a expired application after 30 days of inactivity
+- erases a internally_submitted application after 30 days of inactivity
+- erases a withdrawn application after 30 days of inactivity
+- takes the message thread with it
+- tells the seeker before the record disappears
+- survives a C.V. file that is already gone
+
+**retention — what must never be erased**
+
+- never erases a LIVE submitted application, however old it is
+- never erases a LIVE viewed application, however old it is
+- never erases a LIVE forwarded application, however old it is
+- keeps a closed application that is inactive for 29 days
+- a recent message resets the clock even when the row itself is stale
+- an OLD message does not save it
+- erases only what is due, leaving everything else untouched
 
 ### `src/scheduler/escalationSweep.test.ts`
 
@@ -212,48 +254,6 @@ against production.
 - an active conversation pauses Clock B too
 - stops entirely once the referrer confirms internal submission
 - the day-3 follow-up is gone — one reminder per download, not two
-
-### `src/scheduler/applicationRetentionSweep.test.ts`
-
-**retention — erasing closed, inactive applications**
-
-- erases a rejected application after 30 days of inactivity
-- erases a expired application after 30 days of inactivity
-- erases a internally_submitted application after 30 days of inactivity
-- erases a withdrawn application after 30 days of inactivity
-- takes the message thread with it
-- tells the seeker before the record disappears
-- survives a C.V. file that is already gone
-
-**retention — what must never be erased**
-
-- never erases a LIVE submitted application, however old it is
-- never erases a LIVE viewed application, however old it is
-- never erases a LIVE forwarded application, however old it is
-- keeps a closed application that is inactive for 29 days
-- a recent message resets the clock even when the row itself is stale
-- an OLD message does not save it
-- erases only what is due, leaving everything else untouched
-
-### `src/modules/users/deleteAccount.test.ts`
-
-**deleting a referrer**
-
-- removes the account, its postings, and the applications on them
-- tells each affected seeker BEFORE their application disappears
-- unlinks every C.V. file the account touched
-- takes the message threads with it
-
-**deleting a seeker**
-
-- removes their applications and C.V. copies but leaves the posting standing
-- removes the profile C.V. too, not just application copies
-
-**deleting an account — edge cases**
-
-- works for an account with nothing attached
-- completes even when a C.V. file is already gone
-- rejects an account that does not exist
 
 ---
 

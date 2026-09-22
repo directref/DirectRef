@@ -79,9 +79,17 @@ for (const line of vtRaw.split('\n')) {
   backend.get(file).get(group).push(scenario);
 }
 
+// Playwright and vitest hand back files in filesystem order, which differs
+// between macOS and Linux — so the same suites generated a different document
+// locally and in CI, and the drift check failed on a doc that was not actually
+// stale. Sort everything; the order must depend on the tests, not the machine.
+const sortMap = (m) => new Map([...m.entries()].sort(([a], [b]) => a.localeCompare(b)));
+const e2eSorted = sortMap(e2e);
+const backendSorted = new Map([...sortMap(backend)].map(([f, g]) => [f, sortMap(g)]));
+
 // ── Render ────────────────────────────────────────────────────────────────────
-const e2eCount = [...e2e.values()].reduce((n, g) => n + g.scenarios.length, 0);
-const beCount = [...backend.values()].reduce((n, f) => n + [...f.values()].reduce((m, s) => m + s.length, 0), 0);
+const e2eCount = [...e2eSorted.values()].reduce((n, g) => n + g.scenarios.length, 0);
+const beCount = [...backendSorted.values()].reduce((n, f) => n + [...f.values()].reduce((m, s) => m + s.length, 0), 0);
 
 const pushGateFor = (tags) => {
   if (tags.includes('@smoke') || tags.includes('@api')) return 'always';
@@ -114,7 +122,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 `;
 
-for (const [title, { tags, scenarios }] of e2e) {
+for (const [title, { tags, scenarios }] of e2eSorted) {
   const readonly = tags.includes('@readonly');
   md += `### ${title}\n\n`;
   md += `\`${tags.join('` `')}\`\n\n`;
@@ -139,7 +147,7 @@ against production.
 
 `;
 
-for (const [file, groups] of backend) {
+for (const [file, groups] of backendSorted) {
   md += `### \`${file}\`\n\n`;
   for (const [group, scenarios] of groups) {
     md += `**${group}**\n\n`;
@@ -156,7 +164,18 @@ md += `---
 if (process.argv.includes('--check')) {
   const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : '';
   if (current !== md) {
-    console.error('TESTS.md is out of date. Run: node scripts/test-inventory.mjs');
+    console.error('TESTS.md is out of date. Run: node scripts/test-inventory.mjs\n');
+    // Show the difference — "out of date" alone tells whoever hits this in CI
+    // nothing about whether a test was added, renamed, or the script changed.
+    const a = current.split('\n'), b = md.split('\n');
+    let shown = 0;
+    for (let i = 0; i < Math.max(a.length, b.length) && shown < 20; i += 1) {
+      if (a[i] !== b[i]) {
+        if (a[i] !== undefined) console.error(`  - ${a[i]}`);
+        if (b[i] !== undefined) console.error(`  + ${b[i]}`);
+        shown += 1;
+      }
+    }
     process.exit(1);
   }
   console.log('TESTS.md is up to date.');
