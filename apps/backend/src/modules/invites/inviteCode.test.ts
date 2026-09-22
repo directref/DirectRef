@@ -57,11 +57,23 @@ describe('generateInviteCode — the column will not accept anything longer', ()
     expect(generateInviteCode('Konstantinos Papadopoulos')).toMatch(/^konstant-[0-9a-f]{6}$|^konstanti-[0-9a-f]{6}$/);
   });
 
-  it('does not collide across many draws for one name', () => {
-    // The old version had 65,536 values per first name; a realistic number of
-    // people called David made clashes a matter of when, not if.
+  it('draws from a keyspace large enough that clashes are rare', () => {
+    // Deliberately NOT "2000 draws give 2000 distinct codes". With 16.7M
+    // values the birthday paradox makes an occasional clash in 2,000 draws
+    // entirely expected (~11% per run) — an earlier version of this test
+    // asserted perfection and was itself flaky, which CI caught before a
+    // human did.
+    //
+    // The threshold separates the two implementations cleanly. The old 4-hex
+    // suffix had 65,536 values and would clash ~30 times in 2,000 draws
+    // (~1,969 distinct); 6 hex clashes ~0.1 times (~2,000 distinct). Anything
+    // above 1,990 could only have come from the larger keyspace.
+    //
+    // Actual uniqueness is not this function's job at all — it is
+    // generateUniqueInviteCode's, which checks the table. See below.
     const codes = new Set(Array.from({ length: 2_000 }, () => generateInviteCode('David Cohen')));
-    expect(codes.size).toBe(2_000);
+    expect(codes.size).toBeGreaterThan(1_990);
+    expect(generateInviteCode('David Cohen')).toMatch(/^david-[0-9a-f]{6}$/);
   });
 });
 
