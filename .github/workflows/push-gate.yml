@@ -91,6 +91,24 @@ jobs:
           fi
           echo "Tags: $TAGS"
 
+  inventory:
+    name: TESTS.md is current
+    # Deliberately NOT behind a path filter, and deliberately not inside the
+    # e2e job. It needs no database and no browser, it takes seconds, and the
+    # first time it lived in the e2e job a commit that skipped that job also
+    # skipped the check — so the gate went green without verifying anything.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install (listing the suites needs their runners)
+        run: |
+          npm ci --prefix apps/backend
+          npm ci --prefix e2e
+      - name: Check
+        run: node scripts/test-inventory.mjs --check
+
   backend:
     name: Backend integration tests
     needs: changes
@@ -170,12 +188,6 @@ jobs:
       - name: Install Chromium
         working-directory: e2e
         run: npx playwright install --with-deps chromium
-
-      # A generated doc nobody regenerates is worse than none — it describes
-      # tests that no longer exist and reads as authoritative. This fails the
-      # gate if TESTS.md no longer matches the suites.
-      - name: TESTS.md is current
-        run: node scripts/test-inventory.mjs --check
 
       # playwright.config.ts starts both apps itself: the backend against the
       # throwaway database above, the frontend as a production build.
