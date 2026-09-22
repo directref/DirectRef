@@ -1,0 +1,195 @@
+name: Push gate
+
+# The fast check that runs on every push and PR: the smoke set, plus whichever
+# tags the changed paths map to. Full regression is the nightly job's business —
+# this one exists to answer "did I break what I just touched" in a few minutes,
+# because a gate nobody waits for is a gate nobody runs.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push supersedes an older one on the same branch. No point finishing a
+# run for code that has already been replaced.
+concurrency:
+  group: push-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Work out what changed
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      e2e_grep: ${{ steps.tags.outputs.grep }}
+      run_e2e: ${{ steps.tags.outputs.run_e2e }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+            frontend:
+              - 'apps/frontend/**'
+            schema:
+              - 'apps/backend/src/db/schema/**'
+              - 'apps/backend/src/db/migrations/**'
+            # NOTE the backslashes. Next.js route groups are literally named
+            # "(marketing)" and "(app)", and these globs are picomatch, where
+            # bare parentheses are extglob GROUPING syntax — an unescaped
+            # '(marketing)' matches nothing at all, silently. Verified: the
+            # escaped form matches, the bare form does not. Do not "tidy" these.
+            marketing:
+              - 'apps/frontend/src/app/\(marketing\)/**'
+            auth:
+              - 'apps/frontend/src/components/auth/**'
+              - 'apps/backend/src/modules/auth/**'
+              - 'apps/backend/src/modules/invites/**'
+            application:
+              - 'apps/frontend/src/components/application/**'
+              - 'apps/frontend/src/app/\(app\)/jobs/**'
+              - 'apps/backend/src/modules/applications/**'
+            credits:
+              - 'apps/backend/src/modules/credits/**'
+              - 'apps/frontend/src/components/credits/**'
+            jobs:
+              - 'apps/backend/src/modules/jobs/**'
+            suite:
+              - 'e2e/**'
+              - '.github/workflows/**'
+
+      # Changed paths -> Playwright tags. @smoke and @api always run: they are
+      # the "is it alive at all" set and cost seconds. A schema or suite change
+      # runs everything, because either can affect any flow.
+      - name: Map changed paths to tags
+        id: tags
+        run: |
+          if [ "${{ steps.filter.outputs.schema }}" = "true" ] || [ "${{ steps.filter.outputs.suite }}" = "true" ]; then
+            echo "grep=" >> "$GITHUB_OUTPUT"
+            echo "run_e2e=true" >> "$GITHUB_OUTPUT"
+            echo "Schema or suite changed — running the whole E2E suite."
+            exit 0
+          fi
+
+          TAGS="@smoke|@api"
+          [ "${{ steps.filter.outputs.marketing }}" = "true" ]   && TAGS="$TAGS|@marketing"
+          [ "${{ steps.filter.outputs.auth }}" = "true" ]        && TAGS="$TAGS|@auth"
+          [ "${{ steps.filter.outputs.application }}" = "true" ] && TAGS="$TAGS|@apply|@refer|@messaging"
+          [ "${{ steps.filter.outputs.credits }}" = "true" ]     && TAGS="$TAGS|@credits"
+          [ "${{ steps.filter.outputs.jobs }}" = "true" ]        && TAGS="$TAGS|@jobs"
+
+          echo "grep=$TAGS" >> "$GITHUB_OUTPUT"
+          if [ "${{ steps.filter.outputs.backend }}" = "true" ] || [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
+            echo "run_e2e=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_e2e=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Tags: $TAGS"
+
+  backend:
+    name: Backend integration tests
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    services:
+      # Port 5433, matching vitest.config.ts. That config REFUSES any other
+      # port, because every test truncates every table — a guard against ever
+      # pointing the suite at a real database.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: directref
+          POSTGRES_PASSWORD: directref_pass
+          POSTGRES_DB: directref_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U directref -d directref_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/backend/package-lock.json
+
+      - run: npm ci
+        working-directory: apps/backend
+
+      - name: Typecheck
+        working-directory: apps/backend
+        run: npm run typecheck
+
+      # globalSetup runs the real migrations against the fresh database, so the
+      # SQL-level CHECK constraints and cascades these tests rely on are the
+      # same DDL production runs.
+      - name: Tests
+        working-directory: apps/backend
+        run: npm test
+
+  e2e:
+    name: End-to-end (${{ needs.changes.outputs.e2e_grep || 'everything' }})
+    needs: changes
+    if: needs.changes.outputs.run_e2e == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: directref
+          POSTGRES_PASSWORD: directref_pass
+          POSTGRES_DB: directref_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U directref -d directref_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefix apps/backend
+          npm ci --prefix apps/frontend
+          npm ci --prefix e2e
+
+      # The E2E suite does not run migrations itself — it drives the app, which
+      # expects a schema to already exist.
+      - name: Migrate the test database
+        working-directory: apps/backend
+        env:
+          DATABASE_URL: postgresql://directref:directref_pass@localhost:5433/directref_test
+        run: npx drizzle-kit migrate
+
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts starts both apps itself: the backend against the
+      # throwaway database above, the frontend as a production build.
+      # --grep-invert @known-issue is what keeps green meaningful — quarantined
+      # tests still run nightly and are still reported, they just do not block.
+      - name: Run
+        working-directory: e2e
+        run: |
+          if [ -n "${{ needs.changes.outputs.e2e_grep }}" ]; then
+            npx playwright test --grep "${{ needs.changes.outputs.e2e_grep }}" --grep-invert "@known-issue"
+          else
+            npx playwright test --grep-invert "@known-issue"
+          fi
+
+      # Uploaded even on failure — this is the artefact you actually want when
+      # something breaks: the trace viewer, DOM snapshots and video.
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 14

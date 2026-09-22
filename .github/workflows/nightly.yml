@@ -1,0 +1,128 @@
+name: Nightly regression
+
+# Everything, every night, regardless of what changed — including the
+# @known-issue quarantine that the push gate skips. The push gate answers
+# "did I break what I touched"; this answers "is anything broken at all",
+# which is a different question and the only one that catches a regression in
+# code nobody has touched for weeks.
+on:
+  schedule:
+    - cron: '0 2 * * *' # 02:00 UTC — ~05:00 Israel, so results are waiting at breakfast
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: 'Playwright tag filter, e.g. @apply or @clocks (blank = everything)'
+        required: false
+        default: ''
+
+jobs:
+  backend:
+    name: Backend integration tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: directref
+          POSTGRES_PASSWORD: directref_pass
+          POSTGRES_DB: directref_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U directref -d directref_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/backend/package-lock.json
+      - run: npm ci
+        working-directory: apps/backend
+      - run: npm run typecheck
+        working-directory: apps/backend
+      - run: npm test
+        working-directory: apps/backend
+
+  e2e:
+    name: Full E2E suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: directref
+          POSTGRES_PASSWORD: directref_pass
+          POSTGRES_DB: directref_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U directref -d directref_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefix apps/backend
+          npm ci --prefix apps/frontend
+          npm ci --prefix e2e
+
+      - name: Migrate the test database
+        working-directory: apps/backend
+        env:
+          DATABASE_URL: postgresql://directref:directref_pass@localhost:5433/directref_test
+        run: npx drizzle-kit migrate
+
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # No --grep-invert here: quarantined tests DO run nightly. That is the
+      # whole point of the quarantine — deferred work stays visible and
+      # countable instead of being deleted and forgotten.
+      - name: Run everything
+        working-directory: e2e
+        run: |
+          if [ -n "${{ inputs.grep }}" ]; then
+            npx playwright test --grep "${{ inputs.grep }}"
+          else
+            npx playwright test
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-playwright-report
+          path: e2e/playwright-report/
+          retention-days: 30
+
+  # Publishes the nightly report to GitHub Pages so it can be read without
+  # downloading a zip from a workflow run.
+  #
+  # REQUIRES Pages to be enabled once: repo Settings -> Pages -> Source:
+  # "GitHub Actions". Until then this job fails harmlessly and the artifact
+  # above is still there — the suite result does not depend on it.
+  publish-report:
+    name: Publish report to Pages
+    needs: e2e
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nightly-playwright-report
+          path: report
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: report }
+      - id: deploy
+        uses: actions/deploy-pages@v4

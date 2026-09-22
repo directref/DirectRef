@@ -1,0 +1,124 @@
+name: Production smoke
+
+# Runs after a push to main has had time to deploy, and answers the question a
+# green build does not: is the commit I just pushed actually the one serving
+# traffic, and does the live site still work?
+#
+# During the 2026-09-16 repo cutover this took a human reading a dashboard
+# three times, because /health returned a cheerful 200 from the OLD build every
+# time. Both apps now report their commit, so it can be asserted instead.
+#
+# READ-ONLY by construction: only @readonly tests run here. Everything that
+# writes — registering, posting a job, uploading a C.V. — is excluded, because
+# a test posting would land in the live feed real users see, and mail to
+# invented addresses erodes the sending domain's reputation.
+on:
+  push:
+    branches: [main]
+    # Only when something deployable changed. A docs- or workflow-only commit
+    # deploys nothing, so there would be no new SHA to wait for.
+    paths:
+      - 'apps/**'
+  workflow_dispatch:
+
+concurrency:
+  group: prod-smoke
+  cancel-in-progress: false # never cancel a deploy verification half-way
+
+env:
+  WEB: https://direct-ref.com
+  API: https://api.direct-ref.com
+
+jobs:
+  changes:
+    name: Which halves will deploy
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+            frontend:
+              - 'apps/frontend/**'
+
+  smoke:
+    name: Verify the deploy, then smoke it
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      # Wait only for the halves that will actually redeploy.
+      #
+      # This mirrors the deploy config deliberately: Railway watches
+      # apps/backend/**, and Vercel is set to skip when nothing under its root
+      # directory changed. So a backend-only push leaves the frontend serving
+      # its previous commit — correctly — and waiting for it would hang until
+      # the job timed out. Getting this wrong makes the smoke job cry wolf on
+      # most pushes, which is how teams learn to ignore it.
+      - name: Wait for the deploying halves to report this commit
+        id: wait
+        env:
+          EXPECT_API: ${{ needs.changes.outputs.backend }}
+          EXPECT_WEB: ${{ needs.changes.outputs.frontend }}
+        run: |
+          WANT="$(echo "${{ github.sha }}" | cut -c1-7)"
+          echo "Want $WANT · backend deploying=$EXPECT_API · frontend deploying=$EXPECT_WEB"
+
+          for i in $(seq 1 60); do
+            API_SHA=$(curl -fsS --max-time 10 "$API/health"      2>/dev/null | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p' || true)
+            WEB_SHA=$(curl -fsS --max-time 10 "$WEB/api/version" 2>/dev/null | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p' || true)
+
+            API_OK=true; WEB_OK=true
+            [ "$EXPECT_API" = "true" ] && [ "$API_SHA" != "$WANT" ] && API_OK=false
+            [ "$EXPECT_WEB" = "true" ] && [ "$WEB_SHA" != "$WANT" ] && WEB_OK=false
+
+            echo "  [$i] api=${API_SHA:-unreachable} web=${WEB_SHA:-unreachable}"
+            if [ "$API_OK" = true ] && [ "$WEB_OK" = true ]; then
+              echo "Deployed halves are live on $WANT"
+              echo "commit=$WANT" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo "::error::$WANT never reached production within 15 minutes (api=${API_SHA:-unreachable}, web=${WEB_SHA:-unreachable}). Check the Vercel and Railway deploy logs."
+          exit 1
+
+      - name: Install
+        run: npm ci --prefix e2e
+
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      # E2E_EXPECTED_COMMIT is only passed when BOTH halves were expected to
+      # move to it — the api-contract spec asserts both endpoints against it,
+      # and on a one-sided deploy the other half legitimately reports its own
+      # older commit.
+      - name: Read-only smoke against production
+        working-directory: e2e
+        env:
+          E2E_BASE_URL: ${{ env.WEB }}
+          E2E_API_URL: ${{ env.API }}
+          E2E_EXPECTED_COMMIT: ${{ (needs.changes.outputs.backend == 'true' && needs.changes.outputs.frontend == 'true') && steps.wait.outputs.commit || '' }}
+          # Only needed while the pre-beta basic-auth gate is up. Absent is
+          # fine now that SITE_PASSWORD is gone from Vercel.
+          E2E_SITE_PASSWORD: ${{ secrets.E2E_SITE_PASSWORD }}
+        run: npx playwright test --grep "@readonly" --grep-invert "@known-issue"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-smoke-report
+          path: e2e/playwright-report/
+          retention-days: 30
