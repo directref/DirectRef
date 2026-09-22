@@ -91,6 +91,20 @@ const backendSorted = new Map([...sortMap(backend)].map(([f, g]) => [f, sortMap(
 const e2eCount = [...e2eSorted.values()].reduce((n, g) => n + g.scenarios.length, 0);
 const beCount = [...backendSorted.values()].reduce((n, f) => n + [...f.values()].reduce((m, s) => m + s.length, 0), 0);
 
+// `vitest list` executes globalSetup, which connects to the test database and
+// migrates it — so with no database it lists NOTHING and exits cleanly. Without
+// this guard the generator cheerfully wrote "0 backend scenarios" and the doc
+// claimed the backend was untested. A generator that silently drops a whole
+// suite is worse than one that refuses to run.
+if (beCount === 0 || e2eCount === 0) {
+  console.error(
+    `Refusing to write: listed ${beCount} backend and ${e2eCount} e2e scenarios.\n` +
+    'A zero here means a runner could not enumerate its tests, not that they do not exist.\n' +
+    'The backend list needs the throwaway database:  cd apps/backend && npm run test:db:up',
+  );
+  process.exit(1);
+}
+
 const pushGateFor = (tags) => {
   if (tags.includes('@smoke') || tags.includes('@api')) return 'always';
   const reasons = [...new Set(tags.map((t) => WHEN[t]).filter(Boolean))];

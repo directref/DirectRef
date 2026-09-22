@@ -98,6 +98,20 @@ jobs:
     # first time it lived in the e2e job a commit that skipped that job also
     # skipped the check — so the gate went green without verifying anything.
     runs-on: ubuntu-latest
+    services:
+      # `vitest list` runs globalSetup, which migrates the test database — with
+      # no database it lists zero tests and exits 0, so the check would compare
+      # against a document missing the entire backend suite.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: directref
+          POSTGRES_PASSWORD: directref_pass
+          POSTGRES_DB: directref_test
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U directref -d directref_test"
+          --health-interval 5s --health-timeout 5s --health-retries 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
