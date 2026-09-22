@@ -171,6 +171,12 @@ jobs:
         working-directory: e2e
         run: npx playwright install --with-deps chromium
 
+      # A generated doc nobody regenerates is worse than none — it describes
+      # tests that no longer exist and reads as authoritative. This fails the
+      # gate if TESTS.md no longer matches the suites.
+      - name: TESTS.md is current
+        run: node scripts/test-inventory.mjs --check
+
       # playwright.config.ts starts both apps itself: the backend against the
       # throwaway database above, the frontend as a production build.
       # --grep-invert @known-issue is what keeps green meaningful — quarantined
