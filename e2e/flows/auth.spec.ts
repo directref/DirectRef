@@ -11,7 +11,7 @@ import { createSeeker, loginViaUi, TEST_PASSWORD, disposeUsers } from '../fixtur
  *    covered: Google blocks automated sign-in, so it stays a manual check.
  */
 
-test.describe('registration and login @auth @smoke', () => {
+test.describe('registration and login', { tag: ['@auth', '@smoke'] }, () => {
   test('a new seeker can register and lands in the app', async ({ page }) => {
     const email = `signup-${Date.now().toString(36)}@example.test`;
 

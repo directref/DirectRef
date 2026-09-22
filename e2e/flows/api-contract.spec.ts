@@ -14,7 +14,7 @@ import { API_URL } from '../fixtures/seed';
  *  @readonly — safe against production. This is the core of the prod smoke job.
  */
 
-test.describe('API contract @api @smoke @readonly', () => {
+test.describe('API contract', { tag: ['@api', '@smoke', '@readonly'] }, () => {
   test('/health reports ok with database and uploads both usable', async ({ request }) => {
     const res = await request.get(`${API_URL}/health`);
     expect(res.status()).toBe(200);

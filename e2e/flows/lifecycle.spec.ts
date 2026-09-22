@@ -28,7 +28,7 @@ async function applicationFor(seeker: Awaited<ReturnType<typeof createSeeker>>, 
   return (await res.json()).data;
 }
 
-test.describe('referrer declines @refer', () => {
+test.describe('referrer declines', { tag: ['@refer'] }, () => {
   test('"Not a fit" closes the application, and the seeker keeps their credits', async () => {
     const referrer = await createReferrer();
     const job = await createJob(referrer);
@@ -69,7 +69,7 @@ test.describe('referrer declines @refer', () => {
   });
 });
 
-test.describe('seeker withdraws @apply', () => {
+test.describe('seeker withdraws', { tag: ['@apply'] }, () => {
   test('can pull a C.V. back before it has been opened', async () => {
     const referrer = await createReferrer();
     const job = await createJob(referrer);
@@ -117,7 +117,7 @@ test.describe('seeker withdraws @apply', () => {
   });
 });
 
-test.describe('in-app messaging @messaging', () => {
+test.describe('in-app messaging', { tag: ['@messaging'] }, () => {
   test('both sides can talk on an application, and each sees the thread', async () => {
     const referrer = await createReferrer();
     const job = await createJob(referrer);

@@ -17,7 +17,7 @@ import { test, expect } from '@playwright/test';
  *  post-deploy smoke job runs.
  */
 
-test.describe('marketing pages @marketing @smoke @readonly', () => {
+test.describe('marketing pages', { tag: ['@marketing', '@smoke', '@readonly'] }, () => {
   test('landing page renders its hero and both audience CTAs', async ({ page }) => {
     const response = await page.goto('/');
     expect(response?.status(), 'landing page should not error').toBeLessThan(400);

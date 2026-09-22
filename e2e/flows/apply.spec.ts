@@ -14,7 +14,7 @@ import { createSeeker, createReferrer, createJob, loginViaUi, disposeUsers, TEST
  *    always points at the flow under test and not at its setup.
  */
 
-test.describe('the referral flow @apply @refer @smoke', () => {
+test.describe('the referral flow', { tag: ['@apply', '@refer', '@smoke'] }, () => {
   test('a seeker sends a C.V., and the referrer receives it and marks it submitted', async ({ page, browser }) => {
     const referrer = await createReferrer();
     const job = await createJob(referrer);
