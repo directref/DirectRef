@@ -18,7 +18,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const fetchMock = vi.fn();
 vi.mock('node-fetch', () => ({ default: (...args: unknown[]) => fetchMock(...args) }));
 
-const { checkJobLiveness } = await import('./jobScraper');
+// Static import: vi.mock above is hoisted over every import in the file, so
+// this already sees the mocked node-fetch. A top-level `await import` would
+// also work at runtime but breaks `tsc` under this tsconfig — and tsc is the
+// production build, so it takes the deploy down with it.
+import { checkJobLiveness } from './jobScraper';
 
 /** A page as the checker sees it. */
 const page = (status: number, html = '') => ({

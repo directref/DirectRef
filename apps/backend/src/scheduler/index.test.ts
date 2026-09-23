@@ -28,7 +28,9 @@ vi.mock('./applicationRetentionSweep', () => ({ runApplicationRetentionSweep: ()
 vi.mock('./jobCleanupSweep', () => ({ runJobCleanupSweep: () => jobCleanup() }));
 vi.mock('./jobLivenessSweep', () => ({ runJobLivenessSweep: () => jobLiveness() }));
 
-const { startScheduler } = await import('./index');
+// Static import — see the note in jobLiveness.test.ts. vi.mock is hoisted, so
+// the sweeps below are already stubbed when this binds.
+import { startScheduler } from './index';
 
 const ALL = [
   ['escalation', escalation],
