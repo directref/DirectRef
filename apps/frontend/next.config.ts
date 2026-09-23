@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
         hostname: 'www.google.com',
         pathname: '/s2/favicons',
       },
+      {
+        // LinkedIn OIDC userinfo's `picture` field (auth.controller.ts) — avatar
+        // for anyone who signed up or connected via LinkedIn.
+        protocol: 'https',
+        hostname: 'media.licdn.com',
+      },
     ],
   },
 };
