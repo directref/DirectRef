@@ -84,7 +84,13 @@
 @layer base {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html { font-size: 16px; }
+  /* Also set on html, not just body: Chrome's macOS elastic/rubber-band
+     overscroll reveals html's own background during the bounce, not body's
+     propagated one, so scrolling past the top edge flashed white. */
+  html {
+    font-size: 16px;
+    background-color: var(--color-page);
+  }
 
   body {
     background-color: var(--color-page);
