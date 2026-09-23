@@ -13,6 +13,21 @@ It reads the real suites, so it cannot describe tests that do not exist.
 | **Nightly** | 02:00 UTC | **Everything below**, quarantine included | [link](https://github.com/directref/DirectRef/actions/workflows/nightly.yml) |
 | **Production smoke** | after a deploy touching `apps/` | `@readonly` only — never writes to the live database or sends mail | [link](https://github.com/directref/DirectRef/actions/workflows/prod-smoke.yml) |
 
+### Which environment a test touches
+
+Almost everything runs against a **throwaway Postgres** that is created, used and
+destroyed — locally via `npm run test:db:up`, in CI as a service container. Those
+tests register users, post jobs, upload C.V.s and send mail freely, because none
+of it is real.
+
+Only the **`@readonly`** group is ever pointed at **live production**, and only by
+the production smoke job. It reads and asserts; it never writes a row and never
+sends mail. A test posting would appear in the feed real seekers are browsing,
+and mail to invented addresses erodes the sending domain — so the split is
+enforced by tag, not by convention.
+
+Every group below says which of the two it touches.
+
 Last nightly report: **https://directref.github.io/DirectRef/**
 
 ---
@@ -27,9 +42,10 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | **a throwaway database AND live production** |
 | Push gate | always |
 | Nightly | yes |
-| Production smoke | yes — safe against production |
+| Production smoke | yes |
 
 - /health reports ok with database and uploads both usable
 - /health identifies which build is serving
@@ -43,6 +59,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | a throwaway database only — never production |
 | Push gate | when application or job code changes |
 | Nightly | yes |
 | Production smoke | no — this group writes |
@@ -57,9 +74,10 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | **a throwaway database AND live production** |
 | Push gate | always |
 | Nightly | yes |
-| Production smoke | yes — safe against production |
+| Production smoke | yes |
 
 - landing page renders its hero and both audience CTAs
 - /our-story renders
@@ -73,6 +91,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | a throwaway database only — never production |
 | Push gate | when application or job code changes |
 | Nightly | yes |
 | Production smoke | no — this group writes |
@@ -86,6 +105,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | a throwaway database only — never production |
 | Push gate | always |
 | Nightly | yes |
 | Production smoke | no — this group writes |
@@ -101,6 +121,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | a throwaway database only — never production |
 | Push gate | when application or job code changes |
 | Nightly | yes |
 | Production smoke | no — this group writes |
@@ -115,6 +136,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 | | |
 |---|---|
+| Runs against | a throwaway database only — never production |
 | Push gate | always |
 | Nightly | yes |
 | Production smoke | no — this group writes |
