@@ -11,6 +11,10 @@ import { NextResponse } from 'next/server';
  *  VERCEL_GIT_COMMIT_SHA is injected by Vercel on every deploy; nothing needs
  *  configuring. Locally it is absent, hence 'unknown'.
  *
+ *  Deploys are gated on the push gate passing — see scripts/deploy-gate.mjs.
+ *  If a check fails, Vercel cancels the build rather than shipping; put
+ *  [force-deploy] in the commit message to override for one release.
+ *
  *  Deliberately under /api: proxy.ts's matcher excludes `api/`, so this stays
  *  reachable while SITE_PASSWORD gates the rest of the site — which is the
  *  whole point, since the beta gate is up precisely when we most want to know
