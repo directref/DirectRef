@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { Home, Search, Send, Bookmark, PlusSquare, Inbox, Bell, Users, LogOut } from 'lucide-react';
+import { Home, Search, Send, Bookmark, PlusSquare, Inbox, Bell, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useUnreadCount } from '@/lib/hooks/useNotifications';
@@ -20,11 +20,6 @@ type Item = {
   badge?: number;
   tourAnchor?: string;
 };
-
-const TOP_ITEMS: Item[] = [
-  { href: '/feed', icon: Home, label: 'Home', tourAnchor: 'nav-home' },
-  { href: '/network', icon: Users, label: 'Network' },
-];
 
 const SEEKER_ITEMS: Item[] = [
   { href: '/jobs', icon: Search, label: 'Browse jobs', tourAnchor: 'nav-jobs' },
@@ -114,10 +109,12 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
 
       <nav className="flex-1 py-2.5 px-2.5 overflow-y-auto">
-        <div className="space-y-0.5 mb-2.5">
-          {TOP_ITEMS.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(pathname, search, item.href)} onNavigate={onNavigate} />
-          ))}
+        <div className="mb-2.5">
+          <NavLink
+            item={{ href: '/feed', icon: Home, label: 'Home', tourAnchor: 'nav-home' }}
+            active={isActive(pathname, search, '/feed')}
+            onNavigate={onNavigate}
+          />
         </div>
 
         <p className="text-[10.5px] font-extrabold uppercase tracking-widest text-sidebar-muted/60 px-2.5 pb-1">
