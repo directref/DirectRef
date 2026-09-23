@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**121 scenarios**: 97 backend (vitest) + 24 end-to-end (Playwright).
+**134 scenarios**: 110 backend (vitest) + 24 end-to-end (Playwright).
 
 ## The three groups
 
@@ -146,7 +146,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 97 scenarios
+## Backend integration (vitest) — 110 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -154,6 +154,33 @@ because nobody waits five days.
 
 Runs on the nightly, and on any push touching `apps/backend/**`. Never runs
 against production.
+
+### `src/modules/applications/responseStats.test.ts`
+
+**ignoring people must lower the score**
+
+- the ghoster who opens instantly and never answers scores BADLY
+- the slower referrer who answers EVERYONE scores better than the fast ghoster
+- counts a turned-down application as a real answer
+- counts internally_submitted too
+
+**speed still matters, among those who answer**
+
+- ranks a same-day answerer above a four-day answerer
+- uses the median, so one outlier does not define a record
+
+**the numbers behind the score are returned for display**
+
+- reports decided, total and median so the UI can show "9 of 10"
+- scores several referrers in one call
+
+**thin records are kept modest rather than hidden**
+
+- does not award a perfect score off a single application
+- lets a strong record outrank a thin perfect one
+- a referrer with no applications at all has no record
+- a referrer whose only applications are still open has no record yet
+- ignores withdrawn applications — the seeker pulled out, not the referrer
 
 ### `src/modules/credits/credits.test.ts`
 

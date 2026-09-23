@@ -58,9 +58,16 @@ export interface Job {
 }
 
 export interface ResponseStats {
+  /** 0-100, built from how often this referrer ANSWERS and how fast — not
+   *  from how fast they open a C.V. See getResponseStatsForReferrers. */
   score: number;
   band: 'green' | 'orange' | 'red';
-  avgHours: number;
+  /** Applications answered, and answered + timed out. Shown as "9 of 10" so
+   *  the seeker can see how much evidence is behind the score. */
+  decided: number;
+  total: number;
+  /** Median hours to an answer, among those answered. */
+  medianHours: number;
 }
 
 export interface JobReferrer {

@@ -203,44 +203,112 @@ export type ResponseBand = 'green' | 'orange' | 'red';
 export interface ResponseStats {
   score: number;
   band: ResponseBand;
-  avgHours: number;
+  /** Applications this referrer actually answered. */
+  decided: number;
+  /** Answered + timed out. The denominator that makes ignoring count. */
+  total: number;
+  /** Median hours to a decision, among those answered. */
+  medianHours: number;
 }
 
-function computeResponseScore(hours: number): { score: number; band: ResponseBand } {
-  let score: number;
-  if (hours <= 24) score = 100 - (hours / 24) * 20;
-  else if (hours <= 48) score = 80 - ((hours - 24) / 24) * 30;
-  else score = Math.max(0, 50 - ((hours - 48) / 48) * 50);
-  score = Math.round(score);
-  const band: ResponseBand = score >= 80 ? 'green' : score >= 50 ? 'orange' : 'red';
-  return { score, band };
+/** An answer, of any kind. "Not a fit" is a response — the seeker knows where
+ *  they stand and can move on, which is the whole promise. */
+const DECIDED_STATUSES = ['forwarded', 'internally_submitted', 'rejected'] as const;
+/** No answer at all: the day-5 auto-close. This is the ghosting the product
+ *  exists to prevent, and it must count against the referrer. Applications
+ *  still in flight are excluded entirely — the clocks have not run out, so
+ *  nothing has been decided either way. Withdrawn is excluded too: the seeker
+ *  pulled out, which says nothing about the referrer. */
+const GHOSTED_STATUS = 'expired';
+
+/** How the hours-to-answer map onto 0–100. Unchanged, and deliberately: the
+ *  breakpoints are the escalation ladder the product already commits to —
+ *  24h before the first nudge, 48h before the firm one, and by 96h the
+ *  application is nearly auto-closed. */
+function speedScore(hours: number): number {
+  if (hours <= 24) return 100 - (hours / 24) * 20;
+  if (hours <= 48) return 80 - ((hours - 24) / 24) * 30;
+  return Math.max(0, 50 - ((hours - 48) / 48) * 50);
 }
 
-/** Average response score per referrer, from every application of theirs that's
- *  been viewed. Referrers with no viewed applications yet are simply absent
- *  from the returned map — there's no track record to score. */
+/** Thin records are pulled toward the middle rather than hidden.
+ *
+ *  A hard "show nothing under N applications" would blank the badge for
+ *  almost every referrer through the whole early beta — exactly the window
+ *  where it is supposed to shape behaviour. Instead each referrer carries a
+ *  few notional average answers that real ones gradually outweigh: one lucky
+ *  fast response reads as promising rather than perfect, and cannot outrank
+ *  nine-out-of-ten. The displayed "9 of 10" tells the seeker how much
+ *  evidence is behind it. */
+const PRIOR_WEIGHT = 3;
+const PRIOR_RATE = 0.6;
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * How reliably a referrer answers, and how quickly — the number a seeker sees
+ * when choosing between referrers on the same posting.
+ *
+ * Deliberately built on DECISIONS, not opens. It previously measured hours
+ * from apply to `viewedAt` and filtered out every application that was never
+ * opened, which made the score-maximising strategy "open everything instantly,
+ * then do nothing" — rewarding precisely the behaviour this product exists to
+ * eliminate, and making ignoring someone literally unable to lower the score.
+ *
+ * Referrers with nothing resolved yet are absent from the map: no evidence is
+ * not the same as bad evidence, and the UI says "new referrer" instead.
+ */
 export async function getResponseStatsForReferrers(referrerIds: string[]): Promise<Map<string, ResponseStats>> {
   const result = new Map<string, ResponseStats>();
   if (referrerIds.length === 0) return result;
 
   const rows = await db
-    .select({ referrerId: applications.referrerId, createdAt: applications.createdAt, viewedAt: applications.viewedAt })
+    .select({
+      referrerId: applications.referrerId,
+      status: applications.status,
+      createdAt: applications.createdAt,
+      forwardedAt: applications.forwardedAt,
+      updatedAt: applications.updatedAt,
+    })
     .from(applications)
-    .where(and(inArray(applications.referrerId, referrerIds), isNotNull(applications.viewedAt)));
+    .where(and(
+      inArray(applications.referrerId, referrerIds),
+      inArray(applications.status, [...DECIDED_STATUSES, GHOSTED_STATUS]),
+    ));
 
-  const hoursByReferrer = new Map<string, number[]>();
+  const byReferrer = new Map<string, { hours: number[]; ghosted: number }>();
   for (const row of rows) {
-    if (!row.viewedAt) continue;
-    const hours = (row.viewedAt.getTime() - row.createdAt.getTime()) / 3_600_000;
-    const list = hoursByReferrer.get(row.referrerId) ?? [];
-    list.push(hours);
-    hoursByReferrer.set(row.referrerId, list);
+    const entry = byReferrer.get(row.referrerId) ?? { hours: [], ghosted: 0 };
+    if (row.status === GHOSTED_STATUS) {
+      entry.ghosted += 1;
+    } else {
+      // forwardedAt is the moment the referrer acted, and is exact for the
+      // forwarded and internally_submitted paths. A rejection stamps no
+      // dedicated column, so updatedAt stands in — accurate in practice,
+      // since a declined application is rarely touched again.
+      const decidedAt = row.forwardedAt ?? row.updatedAt;
+      entry.hours.push(Math.max(0, (decidedAt.getTime() - row.createdAt.getTime()) / 3_600_000));
+    }
+    byReferrer.set(row.referrerId, entry);
   }
 
-  for (const [referrerId, hoursList] of hoursByReferrer) {
-    const avgHours = hoursList.reduce((a, b) => a + b, 0) / hoursList.length;
-    const { score, band } = computeResponseScore(avgHours);
-    result.set(referrerId, { score, band, avgHours });
+  for (const [referrerId, { hours, ghosted }] of byReferrer) {
+    const decided = hours.length;
+    const total = decided + ghosted;
+    if (total === 0) continue;
+
+    // No answers at all is a real, and bad, record — score it on the rate
+    // alone rather than skipping the referrer.
+    const medianHours = decided > 0 ? median(hours) : 0;
+    const rate = (decided + PRIOR_WEIGHT * PRIOR_RATE) / (total + PRIOR_WEIGHT);
+    const score = Math.round((decided > 0 ? speedScore(medianHours) : 0) * rate);
+    const band: ResponseBand = score >= 80 ? 'green' : score >= 50 ? 'orange' : 'red';
+
+    result.set(referrerId, { score, band, decided, total, medianHours: Math.round(medianHours * 10) / 10 });
   }
   return result;
 }

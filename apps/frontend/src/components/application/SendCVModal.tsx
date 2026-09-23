@@ -27,6 +27,19 @@ interface SendCVModalProps {
 /** Two states in one shell: the form, then a success view — no separate
  *  modal to swap in, so nothing can unmount mid-transition when the parent's
  *  `alreadyApplied` flips true right after submit. */
+/** Plain language beats a bare hour count at the moment someone is choosing
+ *  who to trust with their C.V. */
+function formatTypicalReply(medianHours: number): string {
+  if (medianHours < 1) return 'usually replies within the hour';
+  if (medianHours <= 24) return `usually replies within ${Math.max(1, Math.round(medianHours))}h`;
+  const days = Math.round(medianHours / 24);
+  return `usually replies within ${days} day${days === 1 ? '' : 's'}`;
+}
+
+function responseToneClass(band: 'green' | 'orange' | 'red'): string {
+  return band === 'green' ? 'text-jobs-success' : 'text-jobs-ink-muted';
+}
+
 export function SendCVModal({ open, onClose, onSuccess, job, referrers }: SendCVModalProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -169,9 +182,23 @@ export function SendCVModal({ open, onClose, onSuccess, job, referrers }: SendCV
                           <div className="min-w-0">
                             <p className="text-[13.5px] font-semibold text-jobs-ink truncate">{r.fullName}</p>
                             <p className="text-[12px] text-jobs-ink-muted truncate">{r.headline ?? r.companyName}</p>
-                            {r.responseStats && (
-                              <p className={cn('text-[12px] font-medium mt-0.5', r.responseStats.score >= 75 ? 'text-jobs-success' : 'text-jobs-ink-muted')}>
-                                Responds {r.responseStats.score}% of the time
+                            {/* Says what it means. This used to read "Responds
+                                X% of the time" over a number that was really a
+                                speed index built from how fast a C.V. was
+                                OPENED — so a referrer who opened everything
+                                instantly and answered nothing scored near
+                                perfect. It now counts answers, and the raw
+                                "9 of 10" lets a seeker judge how much evidence
+                                is behind it. */}
+                            {r.responseStats ? (
+                              <p className={cn('text-[12px] font-medium mt-0.5', responseToneClass(r.responseStats.band))}>
+                                Answered {r.responseStats.decided} of {r.responseStats.total}
+                                {' · '}
+                                {formatTypicalReply(r.responseStats.medianHours)}
+                              </p>
+                            ) : (
+                              <p className="text-[12px] font-medium mt-0.5 text-jobs-ink-muted">
+                                New referrer, no track record yet
                               </p>
                             )}
                           </div>
