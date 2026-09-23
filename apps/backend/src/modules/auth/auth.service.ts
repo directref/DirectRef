@@ -40,20 +40,27 @@ export async function register(dto: RegisterDto): Promise<User> {
 
   const hasEmailService = !!env.RESEND_API_KEY && env.RESEND_API_KEY !== 're_xxxxxxxxxxxxxxxxxxxx';
 
+  // A test account is never sent mail (see config/testAccounts.ts), so it can
+  // never click a verification link — gating it on one would leave it
+  // permanently unverified and unable to do the thing it exists to check.
+  // An account that cannot receive mail must not be gated on receiving mail.
+  const isTest = isTestAccountEmail(dto.email);
+  const selfVerifies = isTest || !hasEmailService;
+
   const [user] = await db.insert(users).values({
     email: dto.email.toLowerCase(),
     passwordHash,
     fullName: dto.fullName,
     isReferrer: dto.isReferrer,
-    emailVerifyToken: hasEmailService ? emailVerifyToken : null,
-    emailVerified: !hasEmailService, // auto-verify if no email service
+    emailVerifyToken: selfVerifies ? null : emailVerifyToken,
+    emailVerified: selfVerifies,
     inviteCode,
-    isTestAccount: isTestAccountEmail(dto.email),
+    isTestAccount: isTest,
     // If the account email itself is a company domain, account-email
     // verification doubles as work-email verification — no separate
-    // round-trip needed. Only applies when we're auto-verifying the account
-    // email above (no email service); otherwise this happens in verifyEmail().
-    ...(!hasEmailService ? autoVerifiedWorkEmailFields(dto.email) : {}),
+    // round-trip needed. Only applies when the account email is verified at
+    // creation; otherwise this happens in verifyEmail().
+    ...(selfVerifies ? autoVerifiedWorkEmailFields(dto.email) : {}),
   }).returning();
 
   await grantSignupCredits(user.id);

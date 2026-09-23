@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**234 scenarios**: 210 backend (vitest) + 24 end-to-end (Playwright).
+**236 scenarios**: 210 backend (vitest) + 26 end-to-end (Playwright).
 
 ## The three groups
 
@@ -32,7 +32,7 @@ Last nightly report: **https://directref.github.io/DirectRef/**
 
 ---
 
-## End-to-end (Playwright) — 24 scenarios
+## End-to-end (Playwright) — 26 scenarios
 
 Drives the real frontend against the real backend on a throwaway Postgres.
 
@@ -52,6 +52,20 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - the frontend identifies its build too
 - the public jobs sample is reachable and well-shaped
 - an unauthenticated request cannot reach another user's data
+
+### applying for a job actually works here
+
+`@prodsafe` `@apply`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a C.V. sent on this deployment reaches the referrer intact
+- it cleans up after itself
 
 ### in-app messaging
 

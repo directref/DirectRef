@@ -8,10 +8,17 @@ name: Production smoke
 # three times, because /health returned a cheerful 200 from the OLD build every
 # time. Both apps now report their commit, so it can be asserted instead.
 #
-# READ-ONLY by construction: only @readonly tests run here. Everything that
-# writes — registering, posting a job, uploading a C.V. — is excluded, because
-# a test posting would land in the live feed real users see, and mail to
-# invented addresses erodes the sending domain's reputation.
+# SAFE AGAINST PRODUCTION by construction, which is not the same as read-only.
+# Two tags run here:
+#   @readonly  — reads and asserts, changes nothing.
+#   @prodsafe  — WRITES, but only ever as a test account: a `.test` address,
+#                which the backend marks automatically; its postings are
+#                excluded from the landing page, search and suggestions, no
+#                mail can be sent to it, and everything is deleted in a
+#                finally block. That is what lets the one thing the product
+#                must be able to do — send a C.V. — be checked on the real
+#                deployment rather than only in a disposable environment.
+# Anything not carrying one of those tags never runs against production.
 on:
   push:
     branches: [main]
@@ -104,7 +111,12 @@ jobs:
       # move to it — the api-contract spec asserts both endpoints against it,
       # and on a one-sided deploy the other half legitimately reports its own
       # older commit.
-      - name: Read-only smoke against production
+      # @readonly reads; @prodsafe also WRITES, but only ever as a test account:
+      # `.test` addresses, postings excluded from every listing, no mail
+      # possible, and everything deleted in a finally block. That is what lets
+      # the one thing the product must do — send a C.V. — be checked here
+      # rather than only in a disposable environment.
+      - name: Smoke against production
         working-directory: e2e
         env:
           E2E_BASE_URL: ${{ env.WEB }}
@@ -113,7 +125,7 @@ jobs:
           # Only needed while the pre-beta basic-auth gate is up. Absent is
           # fine now that SITE_PASSWORD is gone from Vercel.
           E2E_SITE_PASSWORD: ${{ secrets.E2E_SITE_PASSWORD }}
-        run: npx playwright test --grep "@readonly" --grep-invert "@known-issue"
+        run: npx playwright test --grep "@readonly|@prodsafe" --grep-invert "@known-issue"
 
       - name: Upload report
         if: always()
