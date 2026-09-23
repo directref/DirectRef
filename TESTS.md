@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**181 scenarios**: 157 backend (vitest) + 24 end-to-end (Playwright).
+**205 scenarios**: 181 backend (vitest) + 24 end-to-end (Playwright).
 
 ## The three groups
 
@@ -146,7 +146,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 157 scenarios
+## Backend integration (vitest) — 181 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -416,6 +416,41 @@ against production.
 - treats fiverr.com as a company domain
 - is case-insensitive — nobody types their address consistently
 - pulls the domain off an address, trimmed and lowercased
+
+### `src/services/jobLiveness.test.ts`
+
+**everything ambiguous must NOT be read as closure**
+
+- a 200 with no JSON-LD at all is alive, not dead
+- a future validThrough is alive
+- a JobPosting with no validThrough is alive
+- treats 500 as unknown — the site is unwell, the job may be fine
+- treats 502 as unknown — the site is unwell, the job may be fine
+- treats 503 as unknown — the site is unwell, the job may be fine
+- treats 429 as unknown — the site is unwell, the job may be fine
+- treats 403 as unknown — the site is unwell, the job may be fine
+- treats 401 as unknown — the site is unwell, the job may be fine
+- treats a network failure as unknown
+- treats a timeout as unknown
+- survives unparseable JSON-LD rather than guessing
+- survives a malformed validThrough date
+- ignores a validThrough on a non-JobPosting entity
+- keeps reading later blocks when an earlier one is broken
+
+**how it asks**
+
+- follows redirects and identifies as a browser
+- gives up rather than hanging
+
+**signals that genuinely mean the posting is gone**
+
+- treats 404 as dead — the resource is confirmed gone
+- treats 410 as dead — the resource is confirmed gone
+- treats an expired validThrough as dead
+- finds the posting inside an @graph wrapper
+- finds it in a top-level array
+- handles @type given as an array
+- recovers from trailing commas, which real pages ship
 
 ---
 
