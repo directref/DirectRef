@@ -24,6 +24,10 @@ playwright-report/
 test-results/
 allure-results/
 
+# Worktrees created for background tasks. Each is its own checkout; recorded
+# from here it becomes an empty gitlink — content looks committed and is not.
+.worktrees/
+
 # misc
 .DS_Store
 *.log
