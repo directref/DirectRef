@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**220 scenarios**: 196 backend (vitest) + 24 end-to-end (Playwright).
+**234 scenarios**: 210 backend (vitest) + 24 end-to-end (Playwright).
 
 ## The three groups
 
@@ -146,7 +146,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 196 scenarios
+## Backend integration (vitest) — 210 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -236,6 +236,31 @@ against production.
 - Aleksandrina Petrova can create an account
 - two people sharing a first name both get in
 - two people with Hebrew names both get in
+
+### `src/modules/jobs/testAccountIsolation.test.ts`
+
+**a test account's postings are invisible to everyone else**
+
+- never appear in the landing page sample
+- never appear in search
+- the posting still exists and works for its own owner
+
+**recognising a test address**
+
+- treats probe@direct-ref.test as a test account
+- treats seeker@example.test as a test account
+- treats x@sub.domain.test as a test account
+- treats MIXED@Example.TEST as a test account
+- treats rae@acme.com as a real person
+- treats someone@gmail.com as a real person
+- treats a@test.com as a real person
+- treats b@testing.co.il as a real person
+- is safe on nothing at all
+
+**the flag is set without anyone remembering to set it**
+
+- marks an account registered on a .test address
+- leaves a real account alone
 
 ### `src/modules/users/deleteAccount.test.ts`
 

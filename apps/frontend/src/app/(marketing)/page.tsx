@@ -382,8 +382,14 @@ export default async function LandingPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {sampleJobs.map((job) => (
-              <div key={`${job.title}-${job.companyName}`} className="rounded-2xl p-6 flex flex-col gap-3.5" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
+            {/* Keyed by position, not by title+company. Two referrers at the
+                same company posting the same role is the NORMAL case here —
+                PRD v7 plans exactly that — and identical keys let React
+                duplicate or drop a card. The public sample endpoint returns no
+                id by design, and this list is static and never reorders, so
+                the index is the right key here rather than a lazy one. */}
+            {sampleJobs.map((job, i) => (
+              <div key={i} className="rounded-2xl p-6 flex flex-col gap-3.5" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
                 <div className="flex justify-between items-start gap-3">
                   <div>
                     <h3 className="text-[15px] font-semibold mb-1" style={{ color: mkt.textPrimary }}>{job.title}</h3>

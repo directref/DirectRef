@@ -8,6 +8,7 @@ import { AppError } from '../../middleware/errorHandler';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../../services/email';
 import { autoVerifiedWorkEmailFields } from '../../services/companyMatch';
 import { generateUniqueInviteCode } from '../invites/invites.service';
+import { isTestAccountEmail } from '../../config/testAccounts';
 import { grantSignupCredits } from '../credits/credits.service';
 import type { RegisterDto } from './auth.schemas';
 import type { InferSelectModel } from 'drizzle-orm';
@@ -47,6 +48,7 @@ export async function register(dto: RegisterDto): Promise<User> {
     emailVerifyToken: hasEmailService ? emailVerifyToken : null,
     emailVerified: !hasEmailService, // auto-verify if no email service
     inviteCode,
+    isTestAccount: isTestAccountEmail(dto.email),
     // If the account email itself is a company domain, account-email
     // verification doubles as work-email verification — no separate
     // round-trip needed. Only applies when we're auto-verifying the account

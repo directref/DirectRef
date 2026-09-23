@@ -1,8 +1,32 @@
 import { Resend } from 'resend';
+import { isTestAccountEmail } from '../config/testAccounts';
 import { env } from '../config/env';
 
 // Use a dummy key if not configured — emails just won't send
-const resend = new Resend(env.RESEND_API_KEY || 're_placeholder_key');
+const resendClient = new Resend(env.RESEND_API_KEY || 're_placeholder_key');
+
+/**
+ * Every outbound message goes through here, so the test-account rule is
+ * enforced once rather than remembered at sixteen call sites.
+ *
+ * Mail to a test account is dropped. The `.test` domain does not resolve, so
+ * every one of those messages would bounce — and repeated bounces are what
+ * destroys a sending domain's reputation. On a product whose entire promise is
+ * that an email arrives, that is the one cost not worth paying so a smoke test
+ * can run against production.
+ */
+const resend = {
+  emails: {
+    send: async (payload: Parameters<typeof resendClient.emails.send>[0]) => {
+      const to = Array.isArray(payload.to) ? payload.to[0] : payload.to;
+      if (isTestAccountEmail(to)) {
+        console.log(`[email] skipped "${payload.subject}" to test account ${to}`);
+        return;
+      }
+      return resendClient.emails.send(payload);
+    },
+  },
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DirectRef email design system — ported from the design handoff

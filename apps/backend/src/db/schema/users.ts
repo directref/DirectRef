@@ -55,6 +55,11 @@ export const users = pgTable(
     workEmailVerifyToken: varchar('work_email_verify_token', { length: 64 }),
     workEmailVerifyTokenExp: timestamp('work_email_verify_token_exp', { withTimezone: true }),
     // Onboarding + invite
+    // Set automatically at registration from the address (see
+    // config/testAccounts.ts). Their postings are hidden from every public and
+    // seeker-facing listing, so an automated check can post on the live site
+    // without a real seeker seeing it.
+    isTestAccount: boolean('is_test_account').notNull().default(false),
     onboarded: boolean('onboarded').notNull().default(false),
     inviteCode: varchar('invite_code', { length: 16 }).unique(),
     invitedById: uuid('invited_by_id'), // FK set below via relations

@@ -30,6 +30,21 @@ async function register(opts: { emailPrefix: string; fullName: string; isReferre
   const res = await api.post('/api/auth/register', {
     data: { email, password: TEST_PASSWORD, fullName: opts.fullName, isReferrer: opts.isReferrer },
   });
+  if (res.status() === 429) {
+    // Almost always a stale backend on port 3000 rather than a real limit.
+    // playwright.config relaxes the auth limit for the server IT starts, but
+    // reuseExistingServer is on locally — so a server left running from an
+    // earlier session, or started by hand, is reused with production limits
+    // and every registration 429s. The message matters: the failure otherwise
+    // reads as a product bug and takes a while to place.
+    throw new Error(
+      'Registration was rate-limited (429).\n' +
+      'This is usually a leftover backend on port 3000 that Playwright reused, ' +
+      'started without the relaxed test limits.\n' +
+      'Fix:  lsof -nP -tiTCP:3000 -tiTCP:3001 -sTCP:LISTEN | xargs -r kill -9\n' +
+      'then re-run, letting Playwright start the servers itself.',
+    );
+  }
   expect(res.ok(), `register failed: ${res.status()} ${await res.text()}`).toBeTruthy();
 
   return { email, password: TEST_PASSWORD, fullName: opts.fullName, api };

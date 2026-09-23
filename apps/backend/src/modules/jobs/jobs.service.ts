@@ -23,8 +23,13 @@ export async function getPublicSample(limit = 4) {
       jobType: jobs.jobType,
     })
     .from(jobs)
+    // Joined only to exclude test accounts. This endpoint is unauthenticated
+    // and feeds the landing page — the most visible place a test posting
+    // could leak to.
+    .innerJoin(users, eq(users.id, jobs.referrerId))
     .where(and(
       eq(jobs.isActive, true),
+      eq(users.isTestAccount, false),
       or(sql`${jobs.expiresAt} IS NULL`, sql`${jobs.expiresAt} > now()`),
     ))
     .orderBy(desc(jobs.createdAt))
@@ -213,7 +218,10 @@ export async function searchJobs(
 ) {
   const offset = (page - 1) * limit;
 
-  const conditions = [eq(jobs.isActive, true)];
+  // Test accounts' postings never surface to anyone. This is what lets an
+  // automated check post a real job against the live site without a real
+  // seeker ever seeing it — see config/testAccounts.ts.
+  const conditions = [eq(jobs.isActive, true), eq(users.isTestAccount, false)];
   if (q) conditions.push(or(ilike(jobs.title, `%${q}%`), ilike(jobs.companyName, `%${q}%`))!);
   if (company) conditions.push(ilike(jobs.companyName, `%${company}%`));
 
@@ -352,7 +360,11 @@ export async function getSuggestedJobs(seekerId: string, limit: number): Promise
 
   const seniorityCond = seeker.seniority ? seniorityCondition(seeker.seniority) : undefined;
 
-  const andConditions = [eq(jobs.isActive, true), ne(jobs.referrerId, seekerId)];
+  const andConditions = [
+    eq(jobs.isActive, true),
+    ne(jobs.referrerId, seekerId),
+    eq(users.isTestAccount, false), // never suggest a test account's posting
+  ];
   let preferenceCount = 0;
 
   if (seeker.desiredRole) {
