@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**205 scenarios**: 181 backend (vitest) + 24 end-to-end (Playwright).
+**220 scenarios**: 196 backend (vitest) + 24 end-to-end (Playwright).
 
 ## The three groups
 
@@ -146,7 +146,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 181 scenarios
+## Backend integration (vitest) — 196 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -279,6 +279,15 @@ against production.
 - an OLD message does not save it
 - erases only what is due, leaving everything else untouched
 
+### `src/scheduler/creditGrantSweep.test.ts`
+
+**the monthly credit grant sweep**
+
+- gives a credit to a referrer who has not had one this month
+- grants once a month however often it runs
+- does nothing to a referrer already granted this month
+- runs cleanly with no users at all
+
 ### `src/scheduler/escalationSweep.test.ts`
 
 **Clock A — from CV sent, while awaiting a decision**
@@ -303,6 +312,28 @@ against production.
 - an active conversation pauses Clock B too
 - stops entirely once the referrer confirms internal submission
 - the day-3 follow-up is gone — one reminder per download, not two
+
+### `src/scheduler/index.test.ts`
+
+**keeping them running**
+
+- runs them again every 15 minutes
+- keeps going over a full day
+- does not fire early
+
+**one broken sweep must not stop the others**
+
+- carries on when a sweep rejects
+- still runs on the next tick after a failure
+
+**starting the app**
+
+- runs the escalation sweep immediately, without waiting for the first tick
+- runs the credit grant sweep immediately, without waiting for the first tick
+- runs the retention sweep immediately, without waiting for the first tick
+- runs the job cleanup sweep immediately, without waiting for the first tick
+- runs the job liveness sweep immediately, without waiting for the first tick
+- runs all five — none is quietly missing from the wiring
 
 ### `src/scheduler/jobCleanupSweep.test.ts`
 
