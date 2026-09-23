@@ -11,6 +11,12 @@ import { useDebounce } from '@/lib/hooks/useDebounce';
 import { useAuth } from '@/lib/context/AuthContext';
 import { cn } from '@/lib/utils';
 
+// Location is the one free-text facet (job posters type it, or it's scraped) — case
+// variants of the same place must not appear as separate filter entries.
+function normalizeLocation(loc: string) {
+  return loc.trim().toLowerCase();
+}
+
 function useAllJobs() {
   return useSWR('jobs/browse/v2', () =>
     jobsApi.search({}).then((r) => r.data),
@@ -139,14 +145,20 @@ export default function JobsPage() {
     const roleTypes       = new Map<string, number>();
     const employmentTypes = new Map<string, number>();
     const workModes       = new Map<string, number>();
-    const locations        = new Map<string, number>();
+    // Keyed by normalized location so "Tel Aviv" and "Tel aviv" merge into one
+    // entry; the label keeps whichever casing was seen first.
+    const locations        = new Map<string, { label: string; count: number }>();
 
     allJobs.forEach((item) => {
       companies.set(item.job.companyName, (companies.get(item.job.companyName) ?? 0) + 1);
       if (item.job.roleType) roleTypes.set(item.job.roleType, (roleTypes.get(item.job.roleType) ?? 0) + 1);
       if (item.job.jobType) employmentTypes.set(item.job.jobType, (employmentTypes.get(item.job.jobType) ?? 0) + 1);
       if (item.job.workMode) workModes.set(item.job.workMode, (workModes.get(item.job.workMode) ?? 0) + 1);
-      if (item.job.location) locations.set(item.job.location, (locations.get(item.job.location) ?? 0) + 1);
+      if (item.job.location) {
+        const key = normalizeLocation(item.job.location);
+        const existing = locations.get(key);
+        existing ? existing.count++ : locations.set(key, { label: item.job.location.trim(), count: 1 });
+      }
     });
 
     return {
@@ -154,9 +166,14 @@ export default function JobsPage() {
       roleTypes:       [...roleTypes.entries()].sort((a, b) => b[1] - a[1]),
       employmentTypes: [...employmentTypes.entries()].sort((a, b) => b[1] - a[1]),
       workModes:       [...workModes.entries()].sort((a, b) => b[1] - a[1]),
-      locations:       [...locations.entries()].sort((a, b) => b[1] - a[1]),
+      locations:       [...locations.values()].map(({ label, count }): [string, number] => [label, count]).sort((a, b) => b[1] - a[1]),
     };
   }, [allJobs]);
+
+  const selectedLocationsNorm = useMemo(
+    () => new Set([...selectedLocations].map(normalizeLocation)),
+    [selectedLocations],
+  );
 
   const filtered = useMemo(() => {
     return allJobs.filter((item) => {
@@ -164,7 +181,7 @@ export default function JobsPage() {
       if (selectedRoleTypes.size > 0 && (!item.job.roleType || !selectedRoleTypes.has(item.job.roleType))) return false;
       if (selectedEmploymentTypes.size > 0 && (!item.job.jobType || !selectedEmploymentTypes.has(item.job.jobType))) return false;
       if (selectedWorkModes.size > 0 && (!item.job.workMode || !selectedWorkModes.has(item.job.workMode))) return false;
-      if (selectedLocations.size > 0 && (!item.job.location || !selectedLocations.has(item.job.location))) return false;
+      if (selectedLocationsNorm.size > 0 && (!item.job.location || !selectedLocationsNorm.has(normalizeLocation(item.job.location)))) return false;
       if (selectedContact && item.referrer.id !== selectedContact) return false;
       if (debounced) {
         const q = debounced.toLowerCase();
@@ -178,7 +195,7 @@ export default function JobsPage() {
       }
       return true;
     });
-  }, [allJobs, selectedCompanies, selectedRoleTypes, selectedEmploymentTypes, selectedWorkModes, selectedLocations, selectedContact, debounced]);
+  }, [allJobs, selectedCompanies, selectedRoleTypes, selectedEmploymentTypes, selectedWorkModes, selectedLocationsNorm, selectedContact, debounced]);
 
   const hasFilters = selectedCompanies.size > 0 || selectedRoleTypes.size > 0 || selectedEmploymentTypes.size > 0 || selectedWorkModes.size > 0 || selectedLocations.size > 0 || !!selectedContact || !!debounced;
 

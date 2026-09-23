@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/utils';
 import Image from 'next/image';
@@ -19,7 +20,12 @@ const sizeMap = {
 };
 
 export function Avatar({ src, name, size = 'md', ring, className }: AvatarProps) {
+  const [failed, setFailed] = useState(false);
   const initials = name ? getInitials(name) : '?';
+  // A dead or blocked avatar URL (expired OAuth photo, disallowed remote
+  // host, deleted file) should fall back to initials, not the browser's
+  // broken-image glyph.
+  const showImage = src && !failed;
 
   return (
     <div
@@ -27,12 +33,19 @@ export function Avatar({ src, name, size = 'md', ring, className }: AvatarProps)
         'rounded-full flex items-center justify-center shrink-0 select-none overflow-hidden',
         sizeMap[size],
         ring && 'ring-2 ring-gold-300 ring-offset-2 ring-offset-page',
-        !src && 'bg-gold-500/40 text-gold-300 font-bold',
+        !showImage && 'bg-gold-500/40 text-gold-300 font-bold',
         className,
       )}
     >
-      {src ? (
-        <Image src={src} alt={name ?? 'avatar'} width={72} height={72} className="w-full h-full object-cover" />
+      {showImage ? (
+        <Image
+          src={src}
+          alt={name ?? 'avatar'}
+          width={72}
+          height={72}
+          className="w-full h-full object-cover"
+          onError={() => setFailed(true)}
+        />
       ) : (
         initials
       )}
