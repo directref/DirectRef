@@ -12,7 +12,7 @@ import { BillingCard } from '@/components/settings/BillingCard';
 import { DeleteAccountCard } from '@/components/settings/DeleteAccountCard';
 
 export default function SettingsPage() {
-  const { user, refresh } = useAuth();
+  const { refresh } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const handledLinkedInParam = useRef(false);
@@ -51,7 +51,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-6">
         <ProfileCard />
         <LinkedInCard />
-        {user?.isReferrer && <WorkEmailCard />}
+        <WorkEmailCard />
         <BillingCard />
         <DeleteAccountCard />
       </div>
