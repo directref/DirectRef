@@ -40,6 +40,36 @@ Only the nightly publishes to Pages. The other two attach their report to their
 own run as an artifact, so a tag-filtered push-gate run can never overwrite the
 full nightly report.
 
+### A failed check blocks the release
+
+`scripts/deploy-gate.mjs` asks GitHub whether the **push gate** passed for the
+commit being built, and cancels the deploy if it did not. Without it a red
+check changes nothing — Vercel and Railway build straight from `main`, so a
+broken commit simply fails to build, quietly, and production silently falls
+behind. That happened on 2026-09-22 and cost a day.
+
+**To ship anyway**, put `[force-deploy]` in the commit message:
+
+```bash
+git commit -m "Ship the copy fix [force-deploy]"
+```
+
+The gate then deploys without asking GitHub anything. Use it when the failure
+is already understood and the fix is the next commit. It lives in the commit
+rather than in a settings page on purpose: it applies to one release, it is
+visible in the history, and it cannot be left switched on by accident.
+
+If the checks never report at all, the gate **blocks after 15 minutes** rather
+than assuming the best — shipping something unverified is what it exists to
+prevent.
+
+**Wiring it up** (once, in each platform):
+
+| | |
+|---|---|
+| **Vercel** | Settings → Git → **Ignored Build Step** → Custom → `node scripts/deploy-gate.mjs` |
+| **Railway** | Settings → Source → enable **Wait for CI** if your plan offers it. Otherwise Railway keeps deploying on push, and the gate covers the frontend only — the push gate still goes red either way |
+
 ### Running them yourself
 
 ```bash
