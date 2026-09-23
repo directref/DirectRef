@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**134 scenarios**: 110 backend (vitest) + 24 end-to-end (Playwright).
+**181 scenarios**: 157 backend (vitest) + 24 end-to-end (Playwright).
 
 ## The three groups
 
@@ -146,7 +146,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 110 scenarios
+## Backend integration (vitest) — 157 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -352,6 +352,70 @@ against production.
 - stamps lastLivenessCheckAt even when the posting stays alive
 - caps how many it checks in one tick
 - is idempotent — a second run in the same day re-checks nothing
+
+### `src/services/companyMatch.test.ts`
+
+**auto-verifying a work email from the account email**
+
+- accepts a company address — verifying the account already proved the mailbox
+- refuses a personal address
+- refuses a missing address
+- normalises case on the way in
+
+**Israeli company domains — the case that was entirely blocked**
+
+- lets a .co.il referrer post on their own careers page
+- lets a .co.il referrer post an ATS-hosted role for their company
+- handles a careers subdomain on a .co.il domain
+- handles co.uk the same way
+- handles com.au the same way
+- handles co.jp the same way
+- handles com.br the same way
+- still refuses a .co.il referrer posting for a different company
+
+**matching a work email to a posting — the permissive cases**
+
+- matches when the posting is on the company's own careers site
+- matches a careers subdomain
+- ignores a www prefix
+- falls back to the company name when the posting is on an ATS (https://boards.greenhouse.io/acme/jobs/1)
+- falls back to the company name when the posting is on an ATS (https://jobs.lever.co/acme/1)
+- falls back to the company name when the posting is on an ATS (https://acme.comeet.com/jobs/1)
+- falls back to the company name when the posting is on an ATS (https://apply.workable.com/acme/j/1)
+- falls back to the company name when the posting is on an ATS (https://acme.bamboohr.com/careers/1)
+- matches through common company suffixes
+- matches when the company name carries punctuation or spacing
+- still matches when the sourceUrl is malformed
+
+**matching a work email to a posting — what it refuses**
+
+- refuses an unrelated company
+- refuses an ATS-hosted posting for a different company
+- does not let an ATS domain itself count as a match
+- refuses a short email label that would otherwise match almost anything
+- refuses an empty company name
+- refuses when the company name is only a generic suffix
+
+**recognising a personal mailbox**
+
+- treats gmail.com as personal
+- treats outlook.com as personal
+- treats hotmail.com as personal
+- treats icloud.com as personal
+- treats proton.me as personal
+- treats yahoo.com as personal
+- treats the Israeli consumer provider walla.co.il as personal
+- treats the Israeli consumer provider walla.com as personal
+- treats the Israeli consumer provider nana10.co.il as personal
+- treats the Israeli consumer provider 012.net.il as personal
+- treats the Israeli consumer provider bezeqint.net as personal
+- treats the Israeli consumer provider netvision.net.il as personal
+- treats acme.test as a company domain
+- treats monday.com as a company domain
+- treats wix.com as a company domain
+- treats fiverr.com as a company domain
+- is case-insensitive — nobody types their address consistently
+- pulls the domain off an address, trimmed and lowercased
 
 ---
 
