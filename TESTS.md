@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**94 scenarios**: 70 backend (vitest) + 24 end-to-end (Playwright).
+**121 scenarios**: 97 backend (vitest) + 24 end-to-end (Playwright).
 
 ## The three groups
 
@@ -146,7 +146,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 70 scenarios
+## Backend integration (vitest) — 97 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -276,6 +276,55 @@ against production.
 - an active conversation pauses Clock B too
 - stops entirely once the referrer confirms internal submission
 - the day-3 follow-up is gone — one reminder per download, not two
+
+### `src/scheduler/jobCleanupSweep.test.ts`
+
+**deleting a long-deactivated posting**
+
+- deletes one that no longer has any applications
+- keeps one deactivated only 29 days
+- never touches an ACTIVE posting, however old
+
+**the deletion warning**
+
+- warns the referrer at day 27, three days before deletion
+- does not warn at day 20
+- warns once, not every tick
+- does not warn about an active posting
+
+**the rule that was broken before, and must not break again**
+
+- HOLDS a posting that still has applications on it, however long ago it was deactivated
+- holds it for a submitted application — the sweep does not judge status, only presence
+- holds it for a viewed application — the sweep does not judge status, only presence
+- holds it for a forwarded application — the sweep does not judge status, only presence
+- holds it for a rejected application — the sweep does not judge status, only presence
+- holds it for a expired application — the sweep does not judge status, only presence
+- holds it for a withdrawn application — the sweep does not judge status, only presence
+- deletes it once the last application has gone
+
+### `src/scheduler/jobLivenessSweep.test.ts`
+
+**a confirmed-dead link**
+
+- deactivates the posting and starts its deletion clock
+- tells the seekers whose applications are still pending
+
+**anything short of confirmed dead**
+
+- leaves the posting alone on "alive"
+- leaves the posting alone on "unknown"
+- leaves the posting alone when the check itself throws
+- one failing check does not stop the rest of the batch
+
+**which postings get checked at all**
+
+- checks a job that has never been checked
+- skips a job checked within the last day
+- never checks an already-deactivated posting
+- stamps lastLivenessCheckAt even when the posting stays alive
+- caps how many it checks in one tick
+- is idempotent — a second run in the same day re-checks nothing
 
 ---
 
