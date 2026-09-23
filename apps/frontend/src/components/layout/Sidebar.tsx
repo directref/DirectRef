@@ -22,14 +22,14 @@ type Item = {
 };
 
 const SEEKER_ITEMS: Item[] = [
-  { href: '/jobs',                   icon: Search,   label: 'Browse jobs', tourAnchor: 'nav-jobs' },
-  { href: '/applications?tab=sent',  icon: Send,     label: 'Sent CVs'    },
-  { href: '/applications?tab=saved', icon: Bookmark, label: 'Saved jobs'  },
+  { href: '/jobs', icon: Search, label: 'Browse jobs', tourAnchor: 'nav-jobs' },
+  { href: '/applications?tab=sent', icon: Send, label: 'Sent CVs' },
+  { href: '/applications?tab=saved', icon: Bookmark, label: 'Saved jobs' },
 ];
 
 const REFERRER_ITEMS: Item[] = [
-  { href: '/jobs/post',          icon: PlusSquare, label: 'Post a job' },
-  { href: '/applications/inbox', icon: Inbox,      label: 'CV inbox'   },
+  { href: '/jobs/post', icon: PlusSquare, label: 'Post a job' },
+  { href: '/applications/inbox', icon: Inbox, label: 'CV inbox' },
 ];
 
 const GENERAL_ITEMS: Item[] = [
@@ -43,18 +43,18 @@ function isActive(pathname: string, search: string, href: string) {
   if (!EXACT_ROUTES.includes(path) && pathname.startsWith(path + '/')) return true;
   if (pathname !== path) return false;
   if (!query) return true;
-  // Distinguish links that share a pathname but differ by ?tab=, e.g. Sent CVs vs Saved jobs
   const wantedTab = new URLSearchParams(query).get('tab');
   const currentTab = new URLSearchParams(search).get('tab');
   return wantedTab === null || wantedTab === currentTab;
 }
 
-function NavLink({ item, active }: { item: Item; active: boolean }) {
+function NavLink({ item, active, onNavigate }: { item: Item; active: boolean; onNavigate?: () => void }) {
   const Icon = item.icon;
   return (
     <Link
       href={item.href}
       data-tour={item.tourAnchor}
+      onClick={onNavigate}
       className={cn(
         'flex items-center gap-2.5 rounded-[10px] px-2.5 py-1.5 text-[14.5px] font-medium transition-colors duration-150',
         active ? 'bg-gold-glow text-gold-300' : 'text-sidebar-muted hover:bg-white/5 hover:text-sidebar-foreground',
@@ -71,7 +71,13 @@ function NavLink({ item, active }: { item: Item; active: boolean }) {
   );
 }
 
-export function Sidebar() {
+/** The nav column's actual content: logo, links, credits, profile, logout.
+ *  Shared between the desktop Sidebar and the mobile hamburger drawer
+ *  (TopBar's Radix Dialog) so the two can never drift into showing
+ *  different items. onNavigate closes the mobile drawer after a link is
+ *  clicked; the desktop Sidebar leaves it undefined since there's nothing
+ *  to close. */
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const search = searchParams.toString();
@@ -83,9 +89,8 @@ export function Sidebar() {
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   return (
-    <aside className="hidden md:flex flex-col w-72 shrink-0 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
-      {/* Logo — links home */}
-      <Link href="/feed" className="px-4 h-14 flex items-center gap-3 border-b border-sidebar-border">
+    <>
+      <Link href="/feed" onClick={onNavigate} className="px-4 h-14 flex items-center gap-3 border-b border-sidebar-border shrink-0">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gold-glow border border-gold-300/30">
           <LogoMark size={20} />
         </div>
@@ -104,22 +109,23 @@ export function Sidebar() {
       </Link>
 
       <nav className="flex-1 py-2.5 px-2.5 overflow-y-auto">
-        {/* Home */}
         <div className="mb-2.5">
-          <NavLink item={{ href: '/feed', icon: Home, label: 'Home', tourAnchor: 'nav-home' }} active={isActive(pathname, search, '/feed')} />
+          <NavLink
+            item={{ href: '/feed', icon: Home, label: 'Home', tourAnchor: 'nav-home' }}
+            active={isActive(pathname, search, '/feed')}
+            onNavigate={onNavigate}
+          />
         </div>
 
-        {/* Finding work */}
         <p className="text-[10.5px] font-extrabold uppercase tracking-widest text-sidebar-muted/60 px-2.5 pb-1">
           Finding work
         </p>
         <div className="space-y-0.5 mb-2.5">
           {SEEKER_ITEMS.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(pathname, search, item.href)} />
+            <NavLink key={item.href} item={item} active={isActive(pathname, search, item.href)} onNavigate={onNavigate} />
           ))}
         </div>
 
-        {/* Referring */}
         <p className="text-[10.5px] font-extrabold uppercase tracking-widest text-sidebar-muted/60 px-2.5 pb-1">
           Referring
         </p>
@@ -129,11 +135,11 @@ export function Sidebar() {
               key={item.href}
               item={item.href === '/applications/inbox' && pendingCVs > 0 ? { ...item, badge: pendingCVs } : item}
               active={isActive(pathname, search, item.href)}
+              onNavigate={onNavigate}
             />
           ))}
         </div>
 
-        {/* General */}
         <p className="text-[10.5px] font-extrabold uppercase tracking-widest text-sidebar-muted/60 px-2.5 pb-1">
           General
         </p>
@@ -143,13 +149,13 @@ export function Sidebar() {
               key={item.href}
               item={item.href === '/notifications' && unreadCount > 0 ? { ...item, badge: unreadCount } : item}
               active={isActive(pathname, search, item.href)}
+              onNavigate={onNavigate}
             />
           ))}
         </div>
       </nav>
 
-      {/* Credits + profile + logout */}
-      <div className="p-2 space-y-0.5 border-t border-sidebar-border">
+      <div className="p-2 space-y-0.5 border-t border-sidebar-border shrink-0">
         <div data-tour="credits" className="mb-0.5">
           <CreditsCard />
         </div>
@@ -157,6 +163,7 @@ export function Sidebar() {
           <Link
             href="/settings"
             data-tour="profile"
+            onClick={onNavigate}
             className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[10px] hover:bg-white/5 transition-colors"
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sidebar-card text-[11px] font-semibold text-sidebar-foreground">
@@ -180,8 +187,16 @@ export function Sidebar() {
       <LogoutDialog
         open={logoutOpen}
         onClose={() => setLogoutOpen(false)}
-        onConfirm={() => { setLogoutOpen(false); logout(); }}
+        onConfirm={() => { setLogoutOpen(false); onNavigate?.(); logout(); }}
       />
+    </>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden md:flex flex-col w-72 shrink-0 h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
+      <SidebarContent />
     </aside>
   );
 }

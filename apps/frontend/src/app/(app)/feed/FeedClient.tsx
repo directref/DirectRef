@@ -8,7 +8,7 @@ import { savedJobsApi } from '@/lib/api/savedJobs';
 import { useAuth } from '@/lib/context/AuthContext';
 import { JobCard } from '@/components/job/JobCard';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { timeAgo, jobSlug, STATUS_LABELS, STATUS_COLORS, STATUS_TOOLTIPS } from '@/lib/utils';
+import { cn, timeAgo, jobSlug, STATUS_LABELS, STATUS_COLORS, STATUS_TOOLTIPS } from '@/lib/utils';
 import type { JobWithReferrer } from '@/lib/types';
 import Link from 'next/link';
 
@@ -152,9 +152,14 @@ export default function FeedClient({ initialJobs }: { initialJobs: JobWithReferr
         Here's where things stand.
       </p>
 
-      {/* ── ROLE ACTION BLOCKS — each only shows once there's activity in that category ── */}
+      {/* ── ROLE ACTION BLOCKS — each only shows once there's activity in that category ──
+          Single column on mobile: 1fr 1fr with no breakpoint used to squeeze
+          both cards into ~155px each, wrapping button text onto three lines. */}
       {(showSeekerSummary || showReferrerSummary) && (
-        <div style={{ display: 'grid', gridTemplateColumns: showSeekerSummary && showReferrerSummary ? '1fr 1fr' : '1fr', gap: 16, marginBottom: 28 }}>
+        <div
+          className={cn('grid grid-cols-1', showSeekerSummary && showReferrerSummary && 'sm:grid-cols-2')}
+          style={{ gap: 16, marginBottom: 28 }}
+        >
 
           {/* Seeker block */}
           {showSeekerSummary && (
@@ -217,7 +222,7 @@ export default function FeedClient({ initialJobs }: { initialJobs: JobWithReferr
 
       {/* Empty state — nothing to show yet, offer both paths forward with two large actions */}
       {isNewUser && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 16, marginBottom: 24 }}>
           <div style={{ background: '#fff', border: '1px solid oklch(0.93 0.004 70)', borderRadius: 16, padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             <p style={{ fontSize: 15, fontWeight: 600, margin: 0, color: 'oklch(0.24 0.008 60)' }}>Your CV, hand-delivered</p>
             <Link href="/jobs" onClick={markBrowseStarted} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: 280, padding: '18px 32px', background: 'oklch(0.72 0.13 85)', color: '#1a1206', fontSize: 16, fontWeight: 700, borderRadius: 12, textDecoration: 'none' }}>
