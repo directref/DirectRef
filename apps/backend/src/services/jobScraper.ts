@@ -429,6 +429,21 @@ async function tryLever(url: string, html: string, companyNameHint?: string): Pr
  * doesn't contain), then structured JSON-LD, then Open Graph tags, then
  * falls back to page title heuristics. Never throws.
  */
+/**
+ * Some ATS-embedded pages (most often Greenhouse/Lever widgets on a
+ * company's own careers domain) sit behind bot protection that 403s a
+ * plain server-side fetch — even though the URL itself carries enough info
+ * (gh_jid, or a jobs.lever.co link) to pull the posting from that ATS's
+ * public API without ever loading the page. Tried whenever the page fetch
+ * itself fails, with no HTML available (board-token guessing / direct-link
+ * matching only, no page-embedded token scraping).
+ */
+async function tryAtsApisWithoutHtml(url: string): Promise<ScrapedJob | null> {
+  const greenhouse = await tryGreenhouse(url, '');
+  if (greenhouse) return greenhouse;
+  return tryLever(url, '');
+}
+
 export async function scrapeJobUrl(url: string): Promise<ScrapedJob> {
   try {
     const res = await fetch(url, {
@@ -441,7 +456,7 @@ export async function scrapeJobUrl(url: string): Promise<ScrapedJob> {
       redirect: 'follow',
     });
 
-    if (!res.ok) return {};
+    if (!res.ok) return (await tryAtsApisWithoutHtml(url)) ?? {};
 
     const html = await res.text();
 
@@ -595,7 +610,7 @@ export async function scrapeJobUrl(url: string): Promise<ScrapedJob> {
       workMode:    comeetExtras?.workMode,
     };
   } catch {
-    return {};
+    return (await tryAtsApisWithoutHtml(url).catch(() => null)) ?? {};
   }
 }
 

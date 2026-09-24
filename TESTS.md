@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**240 scenarios**: 214 backend (vitest) + 26 end-to-end (Playwright).
+**245 scenarios**: 219 backend (vitest) + 26 end-to-end (Playwright).
 
 ## The three groups
 
@@ -160,7 +160,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 214 scenarios
+## Backend integration (vitest) — 219 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -521,6 +521,16 @@ against production.
 - finds it in a top-level array
 - handles @type given as an array
 - recovers from trailing commas, which real pages ship
+
+### `src/services/jobScraper.test.ts`
+
+**the page fetch itself is blocked, but the URL still identifies the ATS posting**
+
+- falls back to the Greenhouse API when a gh_jid embed page 403s
+- falls back to the Lever API when a jobs.lever.co page 403s
+- falls back the same way when the page fetch throws outright (timeout, DNS, etc.)
+- still returns nothing — never throws — when a blocked page carries no ATS id to fall back on
+- still returns nothing when the Greenhouse fallback itself has no match either
 
 ### `src/shared/contracts.test.ts`
 
