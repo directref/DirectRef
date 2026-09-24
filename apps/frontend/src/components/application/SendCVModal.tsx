@@ -1,5 +1,6 @@
 'use client';
 
+import type { ResponseBand } from '@contracts';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -36,7 +37,7 @@ function formatTypicalReply(medianHours: number): string {
   return `usually replies within ${days} day${days === 1 ? '' : 's'}`;
 }
 
-function responseToneClass(band: 'green' | 'orange' | 'red'): string {
+function responseToneClass(band: ResponseBand): string {
   return band === 'green' ? 'text-jobs-success' : 'text-jobs-ink-muted';
 }
 

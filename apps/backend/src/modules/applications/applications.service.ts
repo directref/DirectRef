@@ -16,6 +16,10 @@ import {
 } from '../../services/email';
 import { env } from '../../config/env';
 import type { SubmitApplicationDto } from './applications.schemas';
+import {
+  DECIDED_APPLICATION_STATUSES,
+  type ReferrerSettableStatus,
+} from '../../shared/contracts';
 
 /** Submit a CV to a referrer for a specific job */
 /** Copies the seeker's profile CV into a fresh, independent file for this
@@ -213,7 +217,7 @@ export interface ResponseStats {
 
 /** An answer, of any kind. "Not a fit" is a response — the seeker knows where
  *  they stand and can move on, which is the whole promise. */
-const DECIDED_STATUSES = ['forwarded', 'internally_submitted', 'rejected'] as const;
+const DECIDED_STATUSES = DECIDED_APPLICATION_STATUSES;
 /** No answer at all: the day-5 auto-close. This is the ghosting the product
  *  exists to prevent, and it must count against the referrer. Applications
  *  still in flight are excluded entirely — the clocks have not run out, so
@@ -396,7 +400,7 @@ export async function getApplicationById(applicationId: string, userId: string) 
 export async function updateStatus(
   applicationId: string,
   referrerId: string,
-  status: 'viewed' | 'forwarded' | 'rejected' | 'internally_submitted',
+  status: ReferrerSettableStatus,
 ) {
   const [app] = await db.select().from(applications).where(eq(applications.id, applicationId)).limit(1);
   if (!app) throw new AppError(404, 'NOT_FOUND', 'Application not found');

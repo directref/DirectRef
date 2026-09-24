@@ -6,11 +6,17 @@ import { and, eq, inArray, lte, sql } from 'drizzle-orm';
 import { env } from '../config/env';
 import { APPLICATION_RETENTION_DAYS, APPLICATION_RETENTION_MS } from '../config/escalation';
 import { createNotification } from '../modules/notifications/notifications.service';
+import { CLOSED_APPLICATION_STATUSES } from '../shared/contracts';
 
 /** Statuses that mean the application is finished. Anything not in this list
  *  is live and is NEVER erased, however long it has been sitting — that is the
- *  first half of the retention rule and the reason this sweep exists at all. */
-const CLOSED_STATUSES = ['rejected', 'expired', 'internally_submitted', 'withdrawn'] as const;
+ *  first half of the retention rule and the reason this sweep exists at all.
+ *
+ *  Declared in shared/contracts.ts, not here: this list used to be retyped in
+ *  this file, and a status added to the database CHECK constraint without also
+ *  being added here would simply never be erased — a silent, permanent
+ *  retention leak that nothing would have reported. */
+const CLOSED_STATUSES = CLOSED_APPLICATION_STATUSES;
 
 /** Erase closed applications that have had no activity for the retention
  *  window: the row itself untouched, and no message sent on it, since the

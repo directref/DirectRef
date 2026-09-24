@@ -1,3 +1,4 @@
+import type { ReferrerSettableStatus } from '@contracts';
 import { api, serverFetch } from './client';
 import type { ApiResponse, ApplicationWithDetails, ApplicationMessage } from '../types';
 
@@ -22,7 +23,7 @@ export const applicationsApi = {
 
   /** Update status (referrer: viewed | forwarded (Download decision) | rejected (Not a fit) |
    *  internally_submitted (confirms a downloaded CV was submitted internally)) */
-  updateStatus: (id: string, status: 'viewed' | 'forwarded' | 'rejected' | 'internally_submitted') =>
+  updateStatus: (id: string, status: ReferrerSettableStatus) =>
     api.patch(`/api/applications/${id}/status`, { status }),
 
   /** Seeker: swap the CV on a pending application — only while status is

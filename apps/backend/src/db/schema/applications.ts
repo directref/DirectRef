@@ -1,6 +1,7 @@
 import { pgTable, uuid, varchar, text, integer, timestamp, uniqueIndex, index, check } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { users } from './users';
+import { APPLICATION_STATUSES } from '../../shared/contracts';
 import { jobs } from './jobs';
 
 export const applications = pgTable(
@@ -56,7 +57,10 @@ export const applications = pgTable(
       // from 'forwarded' (enforced in the service layer, not here).
       // 'withdrawn' — the seeker pulled their CV before the referrer opened
       // it; only reachable from 'submitted' (enforced in the service layer).
-      sql`${t.status} IN ('submitted', 'viewed', 'forwarded', 'rejected', 'expired', 'internally_submitted', 'withdrawn')`,
+      // sql.raw, not interpolation: a plain ${v} becomes a BOUND PARAMETER, and
+      // drizzle-kit then generates `IN ($1, $2, ...)` into the DDL — a
+      // constraint that means nothing. Verified by generating and reading it.
+      sql`${t.status} IN (${sql.raw(APPLICATION_STATUSES.map((v) => `'${v}'`).join(', '))})`,
     ),
   ],
 );

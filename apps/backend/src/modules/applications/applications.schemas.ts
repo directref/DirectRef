@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { REFERRER_SETTABLE_STATUSES } from '../../shared/contracts';
 
 export const SubmitApplicationSchema = z.object({
   jobId: z.string().uuid('Invalid job ID'),
@@ -11,7 +12,9 @@ export const SubmitApplicationSchema = z.object({
 });
 
 export const UpdateStatusSchema = z.object({
-  status: z.enum(['viewed', 'forwarded', 'rejected', 'internally_submitted']),
+  // Generated from the shared list, so the API accepts exactly the statuses a
+  // referrer is allowed to set — no more, and no less, than the type says.
+  status: z.enum(REFERRER_SETTABLE_STATUSES),
 });
 
 export const SendMessageSchema = z.object({

@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**236 scenarios**: 210 backend (vitest) + 26 end-to-end (Playwright).
+**240 scenarios**: 214 backend (vitest) + 26 end-to-end (Playwright).
 
 ## The three groups
 
@@ -160,7 +160,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 210 scenarios
+## Backend integration (vitest) — 214 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -521,6 +521,15 @@ against production.
 - finds it in a top-level array
 - handles @type given as an array
 - recovers from trailing commas, which real pages ship
+
+### `src/shared/contracts.test.ts`
+
+**the shared contract and the database agree**
+
+- the live CHECK constraint allows exactly APPLICATION_STATUSES
+- every subset list is drawn from APPLICATION_STATUSES
+- closed and pending never overlap
+- a referrer cannot set 'expired' — only the sweep may
 
 ---
 

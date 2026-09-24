@@ -1,7 +1,24 @@
 // ── Core data types matching backend API responses ──────────────────────────
 
-export type EmploymentType = 'full-time' | 'part-time';
-export type Seniority = 'junior' | 'mid' | 'senior' | 'lead' | 'manager';
+// The shared vocabulary is DECLARED ONCE, in apps/backend/src/shared/contracts.ts,
+// and re-exported here so every existing `from '@/lib/types'` import keeps
+// working. These used to be retyped by hand on this side; when 'withdrawn' was
+// added to the database the frontend union silently disagreed with it, and
+// nothing in either build would have said so.
+export type {
+  ApplicationStatus,
+  ConnectionStatus,
+  EmploymentType,
+  ResponseBand,
+  Seniority,
+} from '@contracts';
+import type {
+  ApplicationStatus,
+  ConnectionStatus,
+  EmploymentType,
+  ResponseBand,
+  Seniority,
+} from '@contracts';
 
 export interface User {
   id: string;
@@ -61,7 +78,7 @@ export interface ResponseStats {
   /** 0-100, built from how often this referrer ANSWERS and how fast — not
    *  from how fast they open a C.V. See getResponseStatsForReferrers. */
   score: number;
-  band: 'green' | 'orange' | 'red';
+  band: ResponseBand;
   /** Applications answered, and answered + timed out. Shown as "9 of 10" so
    *  the seeker can see how much evidence is behind the score. */
   decided: number;
@@ -100,7 +117,7 @@ export interface Application {
   cvSizeBytes: number;
   cvMimetype: string;
   coverNote: string | null;
-  status: 'submitted' | 'viewed' | 'forwarded' | 'internally_submitted' | 'rejected' | 'expired' | 'withdrawn';
+  status: ApplicationStatus;
   forwardedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -117,7 +134,7 @@ export interface Connection {
   id: string;
   requesterId: string;
   addresseeId: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: ConnectionStatus;
   createdAt: string;
   updatedAt: string;
   requester?: {
