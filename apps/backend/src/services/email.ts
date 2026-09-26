@@ -240,6 +240,32 @@ export async function sendWorkEmailVerificationEmail(to: string, name: string, t
   });
 }
 
+/** Sent once verifyWorkEmail() (auth.service.ts) completes -- the referrer
+ *  clicked the link from sendWorkEmailVerificationEmail above and is now
+ *  unblocked to post jobs for that company. */
+export async function sendWorkEmailVerifiedEmail(
+  to: string,
+  name: string,
+  workEmail: string,
+  companyName: string | null,
+): Promise<void> {
+  const postJobUrl = `${env.FRONTEND_URL}/jobs/post`;
+  const firstName = name.trim().split(/\s+/)[0] || name;
+  const subject = `Work email verified – you're all set!`;
+  const forCompany = companyName ? ` for ${strong(companyName)}` : '';
+  await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to,
+    subject,
+    html: layout(subject, `We've confirmed your work email. You're ready to post open positions and start referring candidates.`, [
+      eyebrow('Account'),
+      heading(`You're verified, ${esc(firstName)}!`),
+      text(`We've confirmed your work email (${strong(workEmail)}). You're now ready to post open positions${forCompany} and start referring candidates.`),
+      button(postJobUrl, 'Post a Job'),
+    ].join('\n')),
+  });
+}
+
 // ── CV received (notify referrer) ─────────────────────────────────────────────
 
 export async function sendCVNotificationEmail(

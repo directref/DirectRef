@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { AppError } from '../../middleware/errorHandler';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../../services/email';
+import { sendVerificationEmail, sendPasswordResetEmail, sendWorkEmailVerifiedEmail } from '../../services/email';
 import { autoVerifiedWorkEmailFields } from '../../services/companyMatch';
 import { generateUniqueInviteCode } from '../invites/invites.service';
 import { isTestAccountEmail } from '../../config/testAccounts';
@@ -145,6 +145,12 @@ export async function verifyWorkEmail(token: string): Promise<void> {
     workEmailVerifyTokenExp: null,
     updatedAt: new Date(),
   }).where(eq(users.id, user.id));
+
+  if (user.workEmail) {
+    sendWorkEmailVerifiedEmail(user.workEmail, user.fullName, user.workEmail, user.companyName).catch((err) =>
+      console.error('[email] work-email-verified send failed:', err),
+    );
+  }
 }
 
 /** Find-or-create a user from a verified LinkedIn OIDC profile, mirroring
