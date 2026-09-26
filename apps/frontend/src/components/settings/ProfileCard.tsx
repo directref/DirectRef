@@ -43,10 +43,13 @@ function isDirty(a: FormState, b: FormState) {
   return (Object.keys(a) as (keyof FormState)[]).some((k) => a[k] !== b[k]);
 }
 
+/** Reports every provider actually connected, not just one -- a user who
+ *  registered with Google and later used the Settings "Connect" flow to add
+ *  LinkedIn has both googleId and linkedinId set, and picking just one
+ *  silently misreports how they signed in this time. */
 function signInMethod(user: User | null): string {
-  if (user?.googleId) return 'Google';
-  if (user?.linkedinId) return 'LinkedIn';
-  return 'email & password';
+  const methods = [user?.googleId && 'Google', user?.linkedinId && 'LinkedIn'].filter(Boolean) as string[];
+  return methods.length > 0 ? methods.join(' & ') : 'email & password';
 }
 
 // Israel's standard tech-job regional split (the breakdown used across
