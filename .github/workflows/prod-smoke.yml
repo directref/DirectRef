@@ -54,15 +54,14 @@ jobs:
             frontend:
               - 'apps/frontend/**'
 
-  smoke:
-    name: Verify the deploy, then smoke it
+  wait_for_deploy:
+    name: Wait for the deploy
     needs: changes
     runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.wait.outputs.commit }}
+      landed: ${{ steps.wait.outputs.landed }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-
       # Wait only for the halves that will actually redeploy.
       #
       # This mirrors the deploy config deliberately: Railway watches
@@ -71,6 +70,19 @@ jobs:
       # its previous commit — correctly — and waiting for it would hang until
       # the job timed out. Getting this wrong makes the smoke job cry wolf on
       # most pushes, which is how teams learn to ignore it.
+      #
+      # A timeout here is deliberately NOT a job failure (see below) — it is
+      # its own job specifically so that outcome can never fail this
+      # workflow's check suite. 2026-09-24: Railway's "Wait for CI" reads
+      # ALL check suites for the commit, this workflow's included, and blocks
+      # the deploy until they are green. A deploy that is merely slow to
+      # report here looked identical to a genuinely broken one — both ended
+      # this job in failure — so the suite could never go green until the
+      # deploy it was blocking had already landed. Circular, and it stayed
+      # stuck for two days before anyone noticed. Ambiguous timing must
+      # resolve to "we don't know yet", never to "broken" — the same
+      # judgment call checkJobLiveness (apps/backend/src/services/jobScraper.ts)
+      # makes for a careers page that fails to load.
       - name: Wait for the deploying halves to report this commit
         id: wait
         env:
@@ -92,13 +104,24 @@ jobs:
             if [ "$API_OK" = true ] && [ "$WEB_OK" = true ]; then
               echo "Deployed halves are live on $WANT"
               echo "commit=$WANT" >> "$GITHUB_OUTPUT"
+              echo "landed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             sleep 15
           done
 
-          echo "::error::$WANT never reached production within 15 minutes (api=${API_SHA:-unreachable}, web=${WEB_SHA:-unreachable}). Check the Vercel and Railway deploy logs."
-          exit 1
+          echo "::warning::$WANT never reached production within 15 minutes (api=${API_SHA:-unreachable}, web=${WEB_SHA:-unreachable}). Not treated as a failure by itself — a slow deploy must never be able to block the deploy that would fix it. Check the Vercel and Railway deploy logs; re-run this workflow once it has landed."
+          echo "landed=false" >> "$GITHUB_OUTPUT"
+
+  smoke:
+    name: Smoke against production
+    needs: [changes, wait_for_deploy]
+    if: needs.wait_for_deploy.outputs.landed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
 
       - name: Install
         run: npm ci --prefix e2e
@@ -121,7 +144,7 @@ jobs:
         env:
           E2E_BASE_URL: ${{ env.WEB }}
           E2E_API_URL: ${{ env.API }}
-          E2E_EXPECTED_COMMIT: ${{ (needs.changes.outputs.backend == 'true' && needs.changes.outputs.frontend == 'true') && steps.wait.outputs.commit || '' }}
+          E2E_EXPECTED_COMMIT: ${{ (needs.changes.outputs.backend == 'true' && needs.changes.outputs.frontend == 'true') && needs.wait_for_deploy.outputs.commit || '' }}
           # Only needed while the pre-beta basic-auth gate is up. Absent is
           # fine now that SITE_PASSWORD is gone from Vercel.
           E2E_SITE_PASSWORD: ${{ secrets.E2E_SITE_PASSWORD }}

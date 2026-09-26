@@ -68,7 +68,7 @@ prevent.
 | | |
 |---|---|
 | **Vercel** | Settings → Git → **Ignored Build Step** → Custom → `node scripts/deploy-gate.mjs` |
-| **Railway** | Settings → Source → enable **Wait for CI** if your plan offers it. Otherwise Railway keeps deploying on push, and the gate covers the frontend only — the push gate still goes red either way |
+| **Railway** | Leave **Wait for CI** OFF. 2026-09-24: turning it on deadlocked every backend deploy for two days — it waits for *every* check suite on the commit, prod-smoke.yml included, but that workflow only turns green *after* the deploy it would be gating has already landed. Railway keeps deploying on push instead, and the gate covers the frontend only — the push gate still goes red either way |
 
 ### Running them yourself
 
