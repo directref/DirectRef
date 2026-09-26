@@ -59,6 +59,16 @@ export function WorkEmailCard() {
 
   const pendingEmail = !user?.workEmailVerified && user?.workEmail;
 
+  // The verification link almost always opens in a different tab than this
+  // one, so this tab's user object never gets the update on its own. Poll
+  // while a verification is outstanding, so the icon flips to "Verified"
+  // (and the job-post gate unlocks) without a manual reload.
+  useEffect(() => {
+    if (!pendingEmail) return;
+    const interval = setInterval(() => { refresh(); }, 5000);
+    return () => clearInterval(interval);
+  }, [pendingEmail, refresh]);
+
   return (
     <div
       id={WORK_EMAIL_ANCHOR}

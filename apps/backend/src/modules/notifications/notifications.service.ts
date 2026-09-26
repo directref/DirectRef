@@ -19,7 +19,8 @@ export type NotificationType =
   | 'connection_accepted'
   | 'job_deletion_warning'    // inactive job posting will be permanently deleted in 3 days
   | 'application_erased'      // closed application erased after 30 days of inactivity (retention)
-  | 'referrer_left';          // the referrer deleted their account; the seeker's application went with it
+  | 'referrer_left'           // the referrer deleted their account; the seeker's application went with it
+  | 'work_email_verified';    // referrer's work email confirmed — can now post jobs for that company
 
 /** Create a notification for a user */
 export async function createNotification(
