@@ -15,6 +15,7 @@ const TYPE_ICON: Record<string, LucideIcon> = {
   cv_rejected:          XCircle,
   connection_request:   Handshake,
   connection_accepted:  CheckCircle2,
+  work_email_verified:  CheckCircle2,
 };
 
 export default function NotificationsPage() {

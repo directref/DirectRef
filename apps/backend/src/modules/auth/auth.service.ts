@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { AppError } from '../../middleware/errorHandler';
 import { sendVerificationEmail, sendPasswordResetEmail, sendWorkEmailVerifiedEmail } from '../../services/email';
+import { createNotification } from '../notifications/notifications.service';
 import { autoVerifiedWorkEmailFields } from '../../services/companyMatch';
 import { generateUniqueInviteCode } from '../invites/invites.service';
 import { isTestAccountEmail } from '../../config/testAccounts';
@@ -151,6 +152,14 @@ export async function verifyWorkEmail(token: string): Promise<void> {
       console.error('[email] work-email-verified send failed:', err),
     );
   }
+
+  await createNotification(
+    user.id,
+    'work_email_verified',
+    'Work email verified',
+    'You can now post jobs for your company.',
+    '/jobs/post',
+  );
 }
 
 /** Find-or-create a user from a verified LinkedIn OIDC profile, mirroring
