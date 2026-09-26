@@ -17,6 +17,7 @@ import { env } from '../config/env';
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendWorkEmailVerifiedEmail,
   sendCVNotificationEmail,
   sendCVViewedEmail,
   sendCVForwardedEmail,
@@ -51,6 +52,7 @@ const appsUrl = `${env.FRONTEND_URL}/applications`;
 const templates: Array<[name: string, send: () => Promise<void>]> = [
   ['verification',          () => sendVerificationEmail(to, 'preview-token', seeker)],
   ['password-reset',        () => sendPasswordResetEmail(to, 'preview-token')],
+  ['work-email-verified',   () => sendWorkEmailVerifiedEmail(to, referrer, 'roni@acme.com', company)],
   ['cv-received',           () => sendCVNotificationEmail(to, referrer, seeker, job, company, inboxUrl)],
   // Paused in the app (uncomment to re-review the designs):
   // ['cv-viewed',             () => sendCVViewedEmail(to, seeker, referrer, job, company, appsUrl)],
