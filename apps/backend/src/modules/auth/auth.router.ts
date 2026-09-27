@@ -2,7 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import * as ctrl from './auth.controller';
 import { validate } from '../../middleware/validate';
-import { requireAuth } from '../../middleware/auth';
+import { requireAuth, optionalAuth } from '../../middleware/auth';
 import { authLimiter } from '../../middleware/rateLimiter';
 import {
   RegisterSchema,
@@ -15,7 +15,12 @@ const router = Router();
 
 router.post('/register', authLimiter, validate(RegisterSchema), ctrl.register);
 router.post('/login', authLimiter, validate(LoginSchema), ctrl.login);
-router.post('/logout', requireAuth, ctrl.logout);
+// optionalAuth, not requireAuth: logout's only job is clearing cookies, and
+// that must succeed even for a token whose user no longer exists (e.g. the
+// account was just deleted) -- requireAuth 401ing here left the cookies in
+// place, so the browser kept sending a technically-valid-but-orphaned
+// access token and the app rendered a broken, half-logged-in shell.
+router.post('/logout', optionalAuth, ctrl.logout);
 router.get('/me', requireAuth, ctrl.me);
 router.post('/refresh', ctrl.refresh);
 router.get('/verify-email/:token', ctrl.verifyEmail);

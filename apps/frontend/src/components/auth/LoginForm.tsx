@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Input } from '@/components/ui/Input';
@@ -21,6 +22,27 @@ export function LoginForm({ next }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError]               = useState('');
   const { login, isLoading }            = useAuth();
+  const searchParams = useSearchParams();
+  const shownDeletedToast = useRef(false);
+
+  // DeleteAccountCard hard-redirects here (?accountDeleted=1) rather than a
+  // client-side navigation, so this is the only reliable place left to
+  // confirm the deletion actually went through.
+  useEffect(() => {
+    if (searchParams.get('accountDeleted') !== '1') return;
+    // A toast fired at first mount can race the root layout's own Toaster
+    // mount and get dropped silently -- a short delay clears that window.
+    // Deliberately no cleanup/clearTimeout: Strict Mode's mount-unmount-
+    // remount cycle (or any other early re-render) would cancel this and,
+    // combined with the ref guard, mean it never fires at all. The guard
+    // lives inside the callback instead, so a stray extra timer is a no-op
+    // rather than a lost toast.
+    setTimeout(() => {
+      if (shownDeletedToast.current) return;
+      shownDeletedToast.current = true;
+      toast.success('Your account and every CV you uploaded have been deleted.');
+    }, 1000);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

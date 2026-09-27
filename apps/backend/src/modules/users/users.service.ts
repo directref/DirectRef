@@ -7,7 +7,7 @@ import { eq, ilike, or, and, ne } from 'drizzle-orm';
 import { AppError } from '../../middleware/errorHandler';
 import { sanitizeUser } from '../auth/auth.service';
 import { extractEmailDomain, isPersonalEmailDomain } from '../../services/companyMatch';
-import { sendWorkEmailVerificationEmail } from '../../services/email';
+import { sendWorkEmailVerificationEmail, sendAccountDeletedEmail } from '../../services/email';
 import { env } from '../../config/env';
 import { createNotification } from '../notifications/notifications.service';
 import type { UpdateProfileDto } from './users.schemas';
@@ -100,7 +100,7 @@ export async function searchUsers(q: string, page: number, limit: number, reques
  *     rows are gone. The Privacy Policy promises exactly this. */
 export async function deleteAccount(userId: string): Promise<void> {
   const [user] = await db
-    .select({ fullName: users.fullName, cvFilename: users.cvFilename })
+    .select({ fullName: users.fullName, email: users.email, cvFilename: users.cvFilename })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
@@ -137,6 +137,10 @@ export async function deleteAccount(userId: string): Promise<void> {
 
   // Rows first — an unlink that fails must never leave the account half-deleted.
   await db.delete(users).where(eq(users.id, userId));
+
+  sendAccountDeletedEmail(user.email, user.fullName).catch((err) =>
+    console.error('[email] account-deleted send failed:', err),
+  );
 
   const filenames = [
     user.cvFilename,

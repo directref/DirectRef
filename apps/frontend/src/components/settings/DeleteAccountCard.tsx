@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { pfx } from '@/app/(app)/settings/tokens';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { usersApi } from '@/lib/api/users';
-import { useAuth } from '@/lib/context/AuthContext';
+import { authApi } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/client';
 
 /** Self-serve account deletion — the right the Privacy Policy grants.
@@ -18,16 +17,19 @@ import { ApiError } from '@/lib/api/client';
 export function DeleteAccountCard() {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { logout } = useAuth();
-  const router = useRouter();
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
       await usersApi.deleteMe();
-      toast.success('Your account and every CV you uploaded have been deleted.');
-      await logout().catch(() => {});
-      router.replace('/');
+      // Not router.push/replace: the account no longer exists, but a
+      // client-side navigation can land back inside the already-mounted
+      // (app) layout without re-running its auth check (Next.js doesn't
+      // re-fetch a persisted layout for a sibling route), which rendered a
+      // broken, half-logged-in shell instead of the login page. A hard
+      // navigation is the only way to guarantee a clean landing.
+      await authApi.logout().catch(() => {});
+      window.location.href = '/login?accountDeleted=1';
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Could not delete your account';
       toast.error(msg);
