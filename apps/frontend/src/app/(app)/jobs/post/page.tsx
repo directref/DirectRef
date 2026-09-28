@@ -64,7 +64,17 @@ export default function PostJobPage() {
         workMode:    data.workMode    ?? prev.workMode,
       }));
       setScraped(true);
-      toast.success('Details filled in! Review and publish.');
+      // The backend never throws for a page it can't parse -- it resolves
+      // with {}, so a thrown error alone doesn't cover "found nothing." A
+      // caught-but-empty result used to still hit the success toast below,
+      // leaving the referrer staring at a blank form with no indication
+      // anything had gone wrong.
+      const foundSomething = Object.values(data).some((v) => typeof v === 'string' && v.trim());
+      if (foundSomething) {
+        toast.success('Details filled in! Review and publish.');
+      } else {
+        toast.error('Could not read that URL automatically. Fill in the details below.');
+      }
     } catch {
       toast.error('Could not read that URL automatically. Fill in the details below.');
       setForm((prev) => ({ ...prev, sourceUrl: url }));
