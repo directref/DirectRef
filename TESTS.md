@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**245 scenarios**: 219 backend (vitest) + 26 end-to-end (Playwright).
+**271 scenarios**: 240 backend (vitest) + 31 end-to-end (Playwright).
 
 ## The three groups
 
@@ -32,7 +32,7 @@ Last nightly report: **https://directref.github.io/DirectRef/**
 
 ---
 
-## End-to-end (Playwright) — 26 scenarios
+## End-to-end (Playwright) — 31 scenarios
 
 Drives the real frontend against the real backend on a throwaway Postgres.
 
@@ -94,6 +94,8 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 | Production smoke | yes |
 
 - landing page renders its hero and both audience CTAs
+- pre-launch, nothing on the home page leads into the empty app
+- every CTA opens the waitlist with the right question
 - /our-story renders
 - /terms renders
 - /privacy renders
@@ -158,9 +160,24 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - a seeker sends a C.V., and the referrer receives it and marks it submitted
 - a seeker cannot read another seeker's application
 
+### waitlist signup
+
+`@marketing` `@waitlist`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when marketing pages change |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a seeker CTA puts the visitor on the seeker list, with its source and campaign
+- the neutral CTA lets the visitor say they are a referrer
+- a malformed email is refused with a message, and stores nothing
+
 ---
 
-## Backend integration (vitest) — 219 scenarios
+## Backend integration (vitest) — 240 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -295,6 +312,35 @@ against production.
 - works for an account with nothing attached
 - completes even when a C.V. file is already gone
 - rejects an account that does not exist
+
+### `src/modules/waitlist/waitlist.test.ts`
+
+**getWaitlistStats — the launch signal**
+
+- counts each list, excluding people who unsubscribed
+
+**joinWaitlist — who ends up on which list**
+
+- stores a first signup with its role and source, emails once, and syncs to Resend
+- a repeat signup for the same list changes nothing and sends no second email
+- the same person can be on both lists
+- a filled honeypot stores nothing and sends nothing
+- keeps the signup when Resend sync fails, marked for the backfill script
+- keeps the signup when the confirmation email fails
+
+**POST /api/waitlist — the public endpoint**
+
+- normalises the email so "Dana@Example.com " and "dana@example.com" are one person
+- answers a repeat signup exactly like a new one, so the form reveals nothing
+- rejects a malformed email or an unknown role
+- unsubscribe requires a well-formed token
+
+**unsubscribe — "unsubscribe anytime" has to be true**
+
+- marks the row and tells Resend
+- only affects the one list the link came from
+- signing up again after unsubscribing re-subscribes, without another email
+- an unknown token is a silent no-op
 
 ### `src/scheduler/applicationRetentionSweep.test.ts`
 
@@ -531,6 +577,17 @@ against production.
 - falls back the same way when the page fetch throws outright (timeout, DNS, etc.)
 - still returns nothing — never throws — when a blocked page carries no ATS id to fall back on
 - still returns nothing when the Greenhouse fallback itself has no match either
+
+### `src/services/waitlistSegments.test.ts`
+
+**syncWaitlistContact**
+
+- joining creates the contact, then adds it to that role’s Segment only
+- still succeeds when the contact already exists from the other list
+- leaving removes from that Segment, and never touches the global unsubscribe flag
+- treats "already not in the Segment" as done
+- reports failure rather than throwing, so the signup is kept for the backfill
+- does nothing for .test accounts or when unconfigured
 
 ### `src/shared/contracts.test.ts`
 

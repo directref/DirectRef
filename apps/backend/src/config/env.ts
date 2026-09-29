@@ -27,6 +27,15 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().default(''),
   EMAIL_FROM: z.string().default('support@direct-ref.com'),
 
+  // Waitlist → Resend Segments. A SEPARATE key on purpose: managing contacts
+  // needs a full-access Resend key, and RESEND_API_KEY is deliberately a
+  // send-only one. Keeping them apart means the key every email path uses can
+  // still only send. All three empty = signups are stored but not synced; run
+  // scripts/sync-waitlist-segments.ts once they are set to catch up.
+  RESEND_CONTACTS_API_KEY: z.string().default(''),
+  RESEND_SEGMENT_SEEKERS_ID: z.string().default(''),
+  RESEND_SEGMENT_REFERRERS_ID: z.string().default(''),
+
   // Rate limits. Defaults are exactly the values these were hard-coded to, so
   // production behaviour is unchanged unless a var is explicitly set. They are
   // configurable because an automated suite legitimately registers and uploads
@@ -36,6 +45,7 @@ const envSchema = z.object({
   RATE_LIMIT_API_MAX: z.coerce.number().default(1500),
   RATE_LIMIT_UPLOAD_MAX: z.coerce.number().default(10),
   RATE_LIMIT_SCRAPE_MAX: z.coerce.number().default(30),
+  RATE_LIMIT_WAITLIST_MAX: z.coerce.number().default(10),
 
   ADMIN_SECRET: z.string().default('directref_admin_2024_secret_key'),
   UPLOADS_DIR: z.string().default('./uploads'),

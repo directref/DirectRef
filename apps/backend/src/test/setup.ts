@@ -29,6 +29,7 @@ vi.mock('../services/email', () => ({
   sendInternallySubmittedEmail: vi.fn().mockResolvedValue(undefined),
   sendNewMessageEmail: vi.fn().mockResolvedValue(undefined),
   sendJobDeletionWarningEmail: vi.fn().mockResolvedValue(undefined),
+  sendWaitlistConfirmationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 /** Wipe every table between tests.

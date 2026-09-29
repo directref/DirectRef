@@ -26,8 +26,38 @@ test.describe('marketing pages', { tag: ['@marketing', '@smoke', '@readonly'] },
 
     // Relabelled to actions rather than identities on 2026-09-13. Both
     // audiences must have a way in — dropping one silently halves the funnel.
-    await expect(page.getByRole('link', { name: /find a referral/i }).first()).toBeVisible();
-    await expect(page.getByRole('link', { name: /refer someone/i }).first()).toBeVisible();
+    // Since 2026-09-29 they are buttons that open the waitlist, not links.
+    await expect(page.getByRole('button', { name: /find a referral/i }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /refer someone/i }).first()).toBeVisible();
+  });
+
+  test('pre-launch, nothing on the home page leads into the empty app', async ({ page }) => {
+    // Decision 2026-09-29: the site launches with a waitlist while positions
+    // are gathered. A stray /login link drops a visitor into an app with no
+    // roles in it, and the test listings from the beta must not show.
+    await page.goto('/');
+    await expect(page.locator('a[href="/login"], a[href="/register"]')).toHaveCount(0);
+    await expect(page.getByText(/roles with a way in/i)).toHaveCount(0);
+  });
+
+  test('every CTA opens the waitlist with the right question', async ({ page }) => {
+    await page.goto('/');
+
+    // Audience buttons: one submit, role already decided by the button.
+    await page.getByRole('button', { name: /find a referral/i }).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: /positions are on their way/i })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /^notify me$/i })).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name: /refer someone/i }).first().click();
+    await expect(dialog.getByRole('heading', { name: /posting opens soon/i })).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Neutral button: no role to infer, so the visitor picks one.
+    await page.getByRole('button', { name: /join the waitlist/i }).first().click();
+    await expect(dialog.getByRole('button', { name: /looking for a job/i })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /can refer/i })).toBeVisible();
   });
 
   // One assertion per page, each pinned to something that would actually

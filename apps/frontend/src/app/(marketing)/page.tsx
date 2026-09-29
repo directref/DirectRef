@@ -1,10 +1,9 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { MarketingHeader } from '@/components/marketing/MarketingHeader';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { FaqAccordion } from '@/components/marketing/FaqAccordion';
 import { mkt } from './tokens';
-import { API_BASE } from '@/lib/constants';
+import { WaitlistButton } from '@/components/marketing/Waitlist';
 
 const description =
   'Skip the black hole of job boards. DirectRef connects you directly with real employees at top tech companies who can refer you internally.';
@@ -66,27 +65,6 @@ const declinedStep = {
   desc: 'If the referrer passes or HR says no, we tell you that too. A clear no beats days of refreshing an empty inbox.',
 };
 
-interface SampleJob {
-  title: string;
-  companyName: string;
-  location: string | null;
-  jobType: string | null;
-}
-
-/** Live sample for the teaser. Returns [] on any failure or when nothing is
- *  live — the section hides itself rather than inventing listings. */
-async function getSampleJobs(): Promise<SampleJob[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/jobs/sample`, { next: { revalidate: 300 } });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return Array.isArray(json?.data) ? json.data : [];
-  } catch {
-    return [];
-  }
-}
-
-
 const doPoints = [
   'Put your CV in the hands of a real employee inside the company.',
   'Get it submitted through their internal referral program, onto the recruiter’s desk.',
@@ -116,7 +94,7 @@ const faqItems = [
   },
   {
     q: "What if I don't know anyone at the company?",
-    a: "That's the point. You don't need to. Sign in, browse the open roles, and apply to the one you want. The person who posted it is the person who gets your CV.",
+    a: "That's the point. You don't need to. Once DirectRef opens, you browse the roles insiders have posted and apply to the one you want. The person who posted it is the person who gets your CV.",
   },
   {
     q: 'What happens if nobody responds?',
@@ -170,9 +148,7 @@ const jsonLd = [
   },
 ];
 
-export default async function LandingPage() {
-  const sampleJobs = await getSampleJobs();
-
+export default function LandingPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -192,20 +168,18 @@ export default async function LandingPage() {
               Send your CV to a named person inside the company, and find out exactly what happened to it. No black hole, no silence.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/login"
+              <WaitlistButton role="seeker" source="hero_seeker"
                 className="inline-flex items-center gap-2 rounded-[10px] text-[14px] font-semibold"
                 style={{ background: mkt.accentSeeker, color: '#1a1206', padding: '13px 22px' }}
               >
                 Find a referral →
-              </Link>
-              <Link
-                href="/login"
+              </WaitlistButton>
+              <WaitlistButton role="referrer" source="hero_referrer"
                 className="inline-flex items-center rounded-[10px] text-[14px] font-medium"
                 style={{ border: `1px solid ${mkt.borderStrong}`, color: mkt.textPrimary, padding: '12.5px 22px' }}
               >
                 Refer someone
-              </Link>
+              </WaitlistButton>
             </div>
             <p className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-[12.5px]" style={{ color: mkt.textMuted }}>
               <span>Free for job seekers</span>
@@ -292,9 +266,9 @@ export default async function LandingPage() {
                 </div>
               ))}
             </div>
-            <Link href="/login" className="self-start mt-1 text-[14px] font-semibold" style={{ color: mkt.accentSeeker }}>
+            <WaitlistButton role="seeker" source="audience_seeker" className="self-start mt-1 text-[14px] font-semibold" style={{ color: mkt.accentSeeker }}>
               Find a referral →
-            </Link>
+            </WaitlistButton>
           </div>
 
           <div className="rounded-2xl p-7 flex flex-col gap-3.5" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
@@ -307,9 +281,9 @@ export default async function LandingPage() {
                 </div>
               ))}
             </div>
-            <Link href="/login" className="self-start mt-1 text-[14px] font-semibold" style={{ color: mkt.textPrimary }}>
+            <WaitlistButton role="referrer" source="audience_referrer" className="self-start mt-1 text-[14px] font-semibold" style={{ color: mkt.textPrimary }}>
               Refer someone →
-            </Link>
+            </WaitlistButton>
           </div>
         </div>
       </section>
@@ -368,49 +342,6 @@ export default async function LandingPage() {
           </p>
         </div>
       </section>
-
-      {/* LIVE POSITIONS TEASER — real listings only; hidden when nothing is live */}
-      {sampleJobs.length > 0 && (
-        <section id="positions" className="max-w-6xl mx-auto px-5 py-16">
-          <div className="flex items-baseline justify-between mb-8 flex-wrap gap-3">
-            <div>
-              <h2 className="text-[26px] font-bold">Roles with a way in, right now</h2>
-              <p className="mt-2 text-[15px]" style={{ color: mkt.textSecondary }}>A sample of what&apos;s live on DirectRef today.</p>
-            </div>
-            <Link href="/login" className="font-semibold text-[14px] whitespace-nowrap" style={{ color: mkt.accentSeeker }}>
-              Sign in to browse →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Keyed by position, not by title+company. Two referrers at the
-                same company posting the same role is the NORMAL case here —
-                PRD v7 plans exactly that — and identical keys let React
-                duplicate or drop a card. The public sample endpoint returns no
-                id by design, and this list is static and never reorders, so
-                the index is the right key here rather than a lazy one. */}
-            {sampleJobs.map((job, i) => (
-              <div key={i} className="rounded-2xl p-6 flex flex-col gap-3.5" style={{ background: mkt.cardBg, border: `1px solid ${mkt.border}` }}>
-                <div className="flex justify-between items-start gap-3">
-                  <div>
-                    <h3 className="text-[15px] font-semibold mb-1" style={{ color: mkt.textPrimary }}>{job.title}</h3>
-                    <p className="text-[13px]" style={{ color: mkt.textSecondary }}>
-                      {[job.companyName, job.location].filter(Boolean).join(' · ')}
-                    </p>
-                  </div>
-                  {job.jobType && (
-                    <span
-                      className="text-[12px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-                      style={{ color: mkt.textMuted, background: mkt.bg, border: `1px solid ${mkt.border}` }}
-                    >
-                      {job.jobType}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* TRUST */}
       <section id="trust" className="border-b" style={{ borderColor: mkt.border }}>
@@ -474,20 +405,18 @@ export default async function LandingPage() {
             We will not promise you an interview. We will make sure your CV is actually read by the people who decide, and tell you exactly where it stands.
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link
-              href="/login"
+            <WaitlistButton role="seeker" source="closing_seeker"
               className="rounded-[10px] text-[14px] font-semibold"
               style={{ background: mkt.accentSeeker, color: '#1a1206', padding: '13px 22px' }}
             >
               Get referred for free
-            </Link>
-            <Link
-              href="/login"
+            </WaitlistButton>
+            <WaitlistButton role="referrer" source="closing_referrer"
               className="rounded-[10px] text-[14px] font-medium"
               style={{ border: `1px solid ${mkt.borderStrong}`, color: mkt.textPrimary, padding: '12.5px 22px' }}
             >
               Post a role at your company
-            </Link>
+            </WaitlistButton>
           </div>
         </div>
       </section>
