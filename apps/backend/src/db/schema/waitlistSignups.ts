@@ -11,9 +11,9 @@ import { sql } from 'drizzle-orm';
  * DESIGN DECISIONS:
  *  - ONE table with a role column, not two tables: same shape, one endpoint,
  *    and a person can legitimately be on both lists (unique on email + role).
- *  - This table is the source of truth. The Resend Audiences are a copy for
+ *  - This table is the source of truth. The Resend Segments are a copy for
  *    sending; resend_synced_at records which rows made it across, so a missed
- *    sync can be replayed by scripts/sync-waitlist-audiences.ts.
+ *    sync can be replayed by scripts/sync-waitlist-segments.ts.
  *  - unsubscribe_token is random, not derived from the email, so an
  *    unsubscribe link cannot be forged for someone else's address.
  */

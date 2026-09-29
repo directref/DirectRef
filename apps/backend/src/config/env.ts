@@ -27,14 +27,14 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().default(''),
   EMAIL_FROM: z.string().default('support@direct-ref.com'),
 
-  // Waitlist → Resend Audiences. A SEPARATE key on purpose: adding contacts
+  // Waitlist → Resend Segments. A SEPARATE key on purpose: managing contacts
   // needs a full-access Resend key, and RESEND_API_KEY is deliberately a
   // send-only one. Keeping them apart means the key every email path uses can
   // still only send. All three empty = signups are stored but not synced; run
-  // scripts/sync-waitlist-audiences.ts once they are set to catch up.
+  // scripts/sync-waitlist-segments.ts once they are set to catch up.
   RESEND_CONTACTS_API_KEY: z.string().default(''),
-  RESEND_AUDIENCE_SEEKERS_ID: z.string().default(''),
-  RESEND_AUDIENCE_REFERRERS_ID: z.string().default(''),
+  RESEND_SEGMENT_SEEKERS_ID: z.string().default(''),
+  RESEND_SEGMENT_REFERRERS_ID: z.string().default(''),
 
   // Rate limits. Defaults are exactly the values these were hard-coded to, so
   // production behaviour is unchanged unless a var is explicitly set. They are

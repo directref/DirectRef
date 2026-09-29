@@ -1,13 +1,13 @@
 /**
- * Push every waitlist row that has not reached Resend yet into its Audience.
+ * Push every waitlist row that has not reached Resend yet into its Segment.
  *
  * WHY: signups are stored even when the Resend sync is not configured or
- * Resend is down (see services/waitlistAudience.ts). Run this once after
- * setting RESEND_CONTACTS_API_KEY and the two audience IDs, and before sending
- * any launch Broadcast, so the Audiences hold everyone the table holds.
+ * Resend is down (see services/waitlistSegments.ts). Run this once after
+ * setting RESEND_CONTACTS_API_KEY and the two segment IDs, and before sending
+ * any launch Broadcast, so the Segments hold everyone the table holds.
  *
- *   npx tsx src/scripts/sync-waitlist-audiences.ts            # dry run: counts only
- *   npx tsx src/scripts/sync-waitlist-audiences.ts --apply    # actually sync
+ *   npx tsx src/scripts/sync-waitlist-segments.ts             # dry run: counts only
+ *   npx tsx src/scripts/sync-waitlist-segments.ts --apply     # actually sync
  *
  * Safe to re-run: it only touches rows with resend_synced_at IS NULL, and the
  * contact upsert is idempotent.
@@ -15,7 +15,7 @@
 import { isNull } from 'drizzle-orm';
 import { db, queryClient } from '../config/db';
 import { waitlistSignups } from '../db/schema';
-import { isAudienceSyncConfigured } from '../services/waitlistAudience';
+import { isSegmentSyncConfigured } from '../services/waitlistSegments';
 import { syncRow } from '../modules/waitlist/waitlist.service';
 
 const apply = process.argv.includes('--apply');
@@ -32,8 +32,8 @@ async function main() {
     console.log('Dry run. Re-run with --apply to sync.');
     return;
   }
-  if (!isAudienceSyncConfigured()) {
-    console.error('RESEND_CONTACTS_API_KEY / RESEND_AUDIENCE_*_ID are not all set — nothing synced.');
+  if (!isSegmentSyncConfigured()) {
+    console.error('RESEND_CONTACTS_API_KEY / RESEND_SEGMENT_*_ID are not all set — nothing synced.');
     process.exitCode = 1;
     return;
   }

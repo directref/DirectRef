@@ -2,7 +2,7 @@ import { and, count, eq, gte, isNull, sql } from 'drizzle-orm';
 import { db } from '../../config/db';
 import { waitlistSignups, type WaitlistRole } from '../../db/schema/waitlistSignups';
 import { sendWaitlistConfirmationEmail } from '../../services/email';
-import { upsertWaitlistContact } from '../../services/waitlistAudience';
+import { syncWaitlistContact } from '../../services/waitlistSegments';
 import type { JoinWaitlistDto } from './waitlist.schemas';
 
 /**
@@ -15,9 +15,9 @@ import type { JoinWaitlistDto } from './waitlist.schemas';
  *
  * CONNECTIONS:
  * - CALLED BY: waitlist.router (public form + unsubscribe page),
- *   admin.service (counts), scripts/sync-waitlist-audiences.ts.
+ *   admin.service (counts), scripts/sync-waitlist-segments.ts.
  * - CALLS: waitlist_signups table, email.sendWaitlistConfirmationEmail,
- *   waitlistAudience.upsertWaitlistContact.
+ *   waitlistSegments.syncWaitlistContact.
  *
  * DESIGN DECISIONS:
  * - WHY every outcome looks identical to the caller: new signup, repeat
@@ -30,7 +30,7 @@ import type { JoinWaitlistDto } from './waitlist.schemas';
 // ─────────────────────────────────────────────────
 // WHY: the one write the public marketing site makes.
 // WHAT: stores the signup; on a FIRST signup sends the confirmation and syncs
-//       the Resend Audience. A repeat is silent — except that re-joining after
+//       the Resend Segment. A repeat is silent — except that re-joining after
 //       unsubscribing is a fresh opt-in, so it re-subscribes (still no email).
 // CONNECTION: POST /api/waitlist.
 // ─────────────────────────────────────────────────
@@ -89,9 +89,9 @@ export async function unsubscribe(token: string): Promise<void> {
   if (row) await syncRow(row.id, row.email, row.role, true);
 }
 
-/** Push one row to its Resend Audience and record whether it landed. */
+/** Push one row to its Resend Segment and record whether it landed. */
 export async function syncRow(id: string, email: string, role: WaitlistRole, unsubscribed: boolean): Promise<boolean> {
-  const ok = await upsertWaitlistContact(email, role, unsubscribed);
+  const ok = await syncWaitlistContact(email, role, unsubscribed);
   await db
     .update(waitlistSignups)
     .set({ resendSyncedAt: ok ? new Date() : null })

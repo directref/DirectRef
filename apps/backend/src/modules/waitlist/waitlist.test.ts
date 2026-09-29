@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../../config/db';
 import { waitlistSignups } from '../../db/schema';
 import { sendWaitlistConfirmationEmail } from '../../services/email';
-import { upsertWaitlistContact } from '../../services/waitlistAudience';
+import { syncWaitlistContact } from '../../services/waitlistSegments';
 import { joinWaitlist, unsubscribe, getWaitlistStats } from './waitlist.service';
 import app from '../../app';
 
@@ -22,9 +22,9 @@ import app from '../../app';
  *    same reply whatever happened, and unsubscribes that reach Resend.
  */
 
-vi.mock('../../services/waitlistAudience', () => ({
-  upsertWaitlistContact: vi.fn().mockResolvedValue(true),
-  isAudienceSyncConfigured: vi.fn().mockReturnValue(true),
+vi.mock('../../services/waitlistSegments', () => ({
+  syncWaitlistContact: vi.fn().mockResolvedValue(true),
+  isSegmentSyncConfigured: vi.fn().mockReturnValue(true),
 }));
 
 const rows = (email: string) => db.select().from(waitlistSignups).where(eq(waitlistSignups.email, email));
@@ -38,7 +38,7 @@ describe('joinWaitlist — who ends up on which list', () => {
     expect(row.resendSyncedAt).not.toBeNull();
     expect(sendWaitlistConfirmationEmail).toHaveBeenCalledTimes(1);
     expect(sendWaitlistConfirmationEmail).toHaveBeenCalledWith('dana@example.com', 'referrer', row.unsubscribeToken);
-    expect(upsertWaitlistContact).toHaveBeenCalledWith('dana@example.com', 'referrer', false);
+    expect(syncWaitlistContact).toHaveBeenCalledWith('dana@example.com', 'referrer', false);
   });
 
   it('a repeat signup for the same list changes nothing and sends no second email', async () => {
@@ -65,7 +65,7 @@ describe('joinWaitlist — who ends up on which list', () => {
   });
 
   it('keeps the signup when Resend sync fails, marked for the backfill script', async () => {
-    vi.mocked(upsertWaitlistContact).mockResolvedValueOnce(false);
+    vi.mocked(syncWaitlistContact).mockResolvedValueOnce(false);
     await joinWaitlist({ email: 'offline@example.com', role: 'seeker' });
 
     const [row] = await rows('offline@example.com');
@@ -90,7 +90,7 @@ describe('unsubscribe — "unsubscribe anytime" has to be true', () => {
 
     const [after] = await rows('leaver@example.com');
     expect(after.unsubscribedAt).not.toBeNull();
-    expect(upsertWaitlistContact).toHaveBeenLastCalledWith('leaver@example.com', 'seeker', true);
+    expect(syncWaitlistContact).toHaveBeenLastCalledWith('leaver@example.com', 'seeker', true);
   });
 
   it('only affects the one list the link came from', async () => {
@@ -115,7 +115,7 @@ describe('unsubscribe — "unsubscribe anytime" has to be true', () => {
     const [after] = await rows('back@example.com');
     expect(after.unsubscribedAt).toBeNull();
     expect(sendWaitlistConfirmationEmail).toHaveBeenCalledTimes(1);
-    expect(upsertWaitlistContact).toHaveBeenLastCalledWith('back@example.com', 'referrer', false);
+    expect(syncWaitlistContact).toHaveBeenLastCalledWith('back@example.com', 'referrer', false);
   });
 
   it('an unknown token is a silent no-op', async () => {
