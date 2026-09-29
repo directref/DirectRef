@@ -43,19 +43,29 @@ interface OpenOptions {
 
 const WaitlistContext = createContext<((opts: OpenOptions) => void) | null>(null);
 
-// PLACEHOLDER COPY (2026-09-29) — Shai and Anat are writing the final wording.
+// Final copy from Shai, 2026-09-29. One block per way into the modal.
+const BUTTON = {
+  seeker: "I'm looking for a job",
+  referrer: 'I want to refer candidates',
+} as const;
+
 const COPY = {
   seeker: {
     title: 'Positions are on their way',
-    body: "We're lining up roles with insiders who can refer you. Leave your email and we'll tell you the moment positions are live.",
+    body: "We're gathering roles from insiders who can refer. Leave your email and we'll let you know as soon as DirectRef opens.",
+    placeholder: 'you@example.com',
   },
   referrer: {
-    title: 'Posting opens soon',
-    body: "We're getting ready to open DirectRef. Leave your email and we'll let you know when you can post the roles you can refer into.",
+    title: 'Share open roles & claim your bonus',
+    body: "DirectRef is launching soon. Join the waitlist now to get early access so you can post your company's open positions before job seekers start applying.",
+    // A hint, not a rule: any address is accepted. Work-email verification
+    // happens later, before a referrer can post.
+    placeholder: 'work.email@company.com',
   },
   neutral: {
     title: 'Join the DirectRef waitlist',
     body: "We're gathering positions from insiders who can refer. Leave your email and we'll let you know as soon as DirectRef opens.",
+    placeholder: 'you@example.com',
   },
 } as const;
 
@@ -190,7 +200,7 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
                   autoFocus
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={copy.placeholder}
                   aria-invalid={!!error}
                   aria-describedby={error ? 'waitlist-error' : undefined}
                   className="mt-1.5 w-full rounded-[10px] px-3.5 py-3 text-[15px] outline-none focus:ring-2"
@@ -218,7 +228,7 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
                       className="rounded-[10px] text-[14px] font-semibold disabled:opacity-60"
                       style={{ background: mkt.accentSeeker, color: '#1a1206', padding: '13px 22px' }}
                     >
-                      {submitting ? 'Adding you…' : 'Notify me'}
+                      {submitting ? 'Adding you…' : BUTTON[opts.role]}
                     </button>
                   ) : (
                     <>
@@ -229,7 +239,7 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
                         className="rounded-[10px] text-[14px] font-semibold disabled:opacity-60"
                         style={{ background: mkt.accentSeeker, color: '#1a1206', padding: '13px 22px' }}
                       >
-                        Notify me: I&apos;m looking for a job
+                        {BUTTON.seeker}
                       </button>
                       <button
                         type="button"
@@ -238,7 +248,7 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
                         className="rounded-[10px] text-[14px] font-medium disabled:opacity-60"
                         style={{ border: `1px solid ${mkt.borderStrong}`, color: mkt.textPrimary, padding: '12.5px 22px' }}
                       >
-                        Notify me: I can refer at my company
+                        {BUTTON.referrer}
                       </button>
                     </>
                   )}

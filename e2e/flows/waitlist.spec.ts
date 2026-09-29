@@ -22,7 +22,7 @@ test.describe('waitlist signup', { tag: ['@marketing', '@waitlist'] }, () => {
     await page.getByRole('button', { name: /find a referral/i }).first().click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(/email/i).fill(email);
-    await dialog.getByRole('button', { name: /^notify me$/i }).click();
+    await dialog.getByRole('button', { name: /looking for a job/i }).click();
 
     await expect(dialog.getByRole('heading', { name: /you're on the list/i })).toBeVisible();
     await expect(dialog).toContainText(email);
@@ -36,7 +36,7 @@ test.describe('waitlist signup', { tag: ['@marketing', '@waitlist'] }, () => {
     await page.getByRole('button', { name: /join the waitlist/i }).first().click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(/email/i).fill(email);
-    await dialog.getByRole('button', { name: /can refer/i }).click();
+    await dialog.getByRole('button', { name: /refer candidates/i }).click();
 
     await expect(dialog.getByRole('heading', { name: /you're on the list/i })).toBeVisible();
     expect(await waitlistRowsFor(email)).toEqual([{ role: 'referrer', source_cta: 'nav', utm_source: null }]);
@@ -48,7 +48,7 @@ test.describe('waitlist signup', { tag: ['@marketing', '@waitlist'] }, () => {
     await page.getByRole('button', { name: /refer someone/i }).first().click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(/email/i).fill('not-an-email');
-    await dialog.getByRole('button', { name: /^notify me$/i }).click();
+    await dialog.getByRole('button', { name: /refer candidates/i }).click();
 
     await expect(dialog.getByRole('alert')).toContainText(/valid email/i);
     await expect(dialog.getByRole('heading', { name: /you're on the list/i })).toHaveCount(0);
