@@ -36,3 +36,14 @@ export const scrapeLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: { code: 'RATE_LIMITED', message: 'Too many scrape requests. Please try again later.' } },
 });
+
+/** Public, unauthenticated waitlist form — the one write anyone on the
+ *  internet can make. 10 per IP per hour is far above what a person needs
+ *  (one per list) and far below what makes a bot run worthwhile. */
+export const waitlistLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: env.RATE_LIMIT_WAITLIST_MAX,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please try again later.' } },
+});

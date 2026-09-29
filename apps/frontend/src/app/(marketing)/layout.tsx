@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Rubik } from 'next/font/google';
 import { mkt } from './tokens';
+import { WaitlistProvider } from '@/components/marketing/Waitlist';
 
 /** Closed to search engines for the early beta — paired with the blanket
  *  disallow in app/robots.ts. Remove BOTH when going public; either one alone
@@ -22,7 +23,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       className={`${rubik.variable} min-h-screen`}
       style={{ fontFamily: 'var(--font-rubik)', background: mkt.bg, color: mkt.textPrimary }}
     >
-      {children}
+      <WaitlistProvider>{children}</WaitlistProvider>
     </div>
   );
 }

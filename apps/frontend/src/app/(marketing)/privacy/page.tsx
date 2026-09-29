@@ -59,6 +59,7 @@ const thStyle = { borderBottom: `2px solid ${mkt.accentSeeker}`, color: mkt.text
 const linkStyle = { color: mkt.accentSeeker, borderBottom: `1px solid ${mkt.accentSeeker}` };
 
 const collected: [string, string, string][] = [
+  ['Email address, and whether you joined as a seeker or a referrer', 'Waitlist sign-up', 'To email you when DirectRef opens. Nothing else, and you can unsubscribe anytime'],
   ['Name, email, password (hashed)', 'Sign-up', 'To create and secure your account'],
   ['Google account profile', 'Google sign-in', 'To authenticate you without a separate password'],
   ['Work email address at a company', 'Before posting a role', 'To verify a referrer controls an address at the company they post for'],
@@ -76,11 +77,12 @@ const processors: [string, string, string][] = [
   ['Railway', 'Application hosting, the primary database, and CV file storage', 'EU (europe-west4)'],
   ['Vercel', 'Website and app front-end hosting', 'Global edge network'],
   ['Cloudflare', 'DNS, network protection, and email routing', 'Global edge network'],
-  ['Resend', 'Transactional email', 'US / EU'],
+  ['Resend', 'Transactional email, and the waitlist mailing list', 'US / EU'],
   ['Google', '"Sign in with Google" authentication', 'US'],
 ];
 
 const retention: [string, string][] = [
+  ['Waitlist sign-ups', 'Until you ask us to delete it. If you unsubscribe we keep only the address, marked unsubscribed, so we never email it again'],
   ['Live applications and their CVs', 'Kept for as long as the application is open. Nothing active is ever deleted.'],
   ['Closed applications, with their CV copy, cover note and messages', 'Erased after 30 consecutive days with no activity on the application'],
   ['The CV on your profile', 'Kept until you replace it, remove it, or delete your account'],
@@ -96,7 +98,7 @@ export default function PrivacyPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <MarketingHeader variant="sub" />
 
-      <LegalLayout title="Privacy Policy" effectiveDate="Effective 11 September 2026 · Last updated 11 September 2026" toc={toc}>
+      <LegalLayout title="Privacy Policy" effectiveDate="Effective 11 September 2026 · Last updated 29 September 2026" toc={toc}>
         <LegalH2 id="s1">1. Who we are</LegalH2>
         <LegalP>DirectRef (&quot;DirectRef&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;) is a cross-company referral marketplace operated by <LegalStrong>Shai Atar and Anat Atar Lachmish</LegalStrong>, jointly, as private individuals in Israel. DirectRef is not currently incorporated.</LegalP>
         <LegalP>We are the controller of the personal data described in this policy, meaning we decide why and how it is processed.</LegalP>
@@ -165,7 +167,7 @@ export default function PrivacyPage() {
         </LegalUl>
 
         <LegalH2 id="s5">5. Why we process your data, and on what legal basis</LegalH2>
-        <LegalP>We process data to run and secure your account, deliver applications to the referrer you chose, run the response clocks, send transactional notifications, manage credits, prevent fraud, improve the product, and meet legal obligations, resting on your consent, contract performance, our legitimate interests, or a legal obligation, as applicable under Israeli law and GDPR where it applies.</LegalP>
+        <LegalP>We process data to run and secure your account, deliver applications to the referrer you chose, run the response clocks, send transactional notifications, email people on the waitlist when DirectRef opens (on the basis of the consent you give by joining it), manage credits, prevent fraud, improve the product, and meet legal obligations, resting on your consent, contract performance, our legitimate interests, or a legal obligation, as applicable under Israeli law and GDPR where it applies.</LegalP>
         <LegalP><LegalStrong>We do not sell your personal data. We do not share it with advertisers. We do not use your CV to train machine learning models. We are not a data broker.</LegalStrong></LegalP>
 
         <LegalH2 id="s6">6. Who your data is shared with</LegalH2>
@@ -174,7 +176,6 @@ export default function PrivacyPage() {
           <LegalLi>The referrer you choose receives your name, your CV file, your cover note, and any messages you send about that application. They can download your CV.</LegalLi>
           <LegalLi>A seeker who applies to your role sees your name, your employer, your job title and your public profile.</LegalLi>
           <LegalLi>Job listings are visible to signed-in users and include the referrer&apos;s name and company.</LegalLi>
-          <LegalLi>A small sample of live listings, showing <LegalStrong>job title, company, location and job type only</LegalStrong>, is shown on our public home page. It never includes the referrer&apos;s name or any seeker&apos;s data.</LegalLi>
         </LegalUl>
 
         <LegalH3>6.2 Service providers who process data on our behalf</LegalH3>

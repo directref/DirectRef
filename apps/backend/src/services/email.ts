@@ -133,7 +133,24 @@ const link = (href: string, label: string) =>
 
 // ── Layout shell ─────────────────────────────────────────────────────────────
 
-function layout(title: string, preheader: string, blocks: string) {
+/** The footer every account email carries. People on the waitlist have no
+ *  account and no Settings page, so their mail passes its own (see
+ *  waitlistFooter) — telling them "you use DirectRef" would be untrue. */
+function accountFooter() {
+  return `<p style="margin:0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
+        You're getting this because you use DirectRef. A referral is a human handing your CV to
+        the right person &mdash; it is not a guaranteed interview.
+      </p>
+      <p style="margin:10px 0 0 0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
+        <a href="${env.FRONTEND_URL}/settings" style="color:${color.inkSecondary};text-decoration:underline;">Email preferences</a>
+        &nbsp;&middot;&nbsp;
+        <a href="${env.FRONTEND_URL}/privacy" style="color:${color.inkSecondary};text-decoration:underline;">Privacy</a>
+        &nbsp;&middot;&nbsp;
+        <a href="${env.FRONTEND_URL}/terms" style="color:${color.inkSecondary};text-decoration:underline;">Terms</a>
+      </p>`;
+}
+
+function layout(title: string, preheader: string, blocks: string, footer: string = accountFooter()) {
   return `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
@@ -163,17 +180,7 @@ function layout(title: string, preheader: string, blocks: string) {
       </td></tr>
   <tr>
     <td style="padding:22px 32px 28px 32px;border-top:1px solid ${color.border};">
-      <p style="margin:0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
-        You're getting this because you use DirectRef. A referral is a human handing your CV to
-        the right person &mdash; it is not a guaranteed interview.
-      </p>
-      <p style="margin:10px 0 0 0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
-        <a href="${env.FRONTEND_URL}/settings" style="color:${color.inkSecondary};text-decoration:underline;">Email preferences</a>
-        &nbsp;&middot;&nbsp;
-        <a href="${env.FRONTEND_URL}/privacy" style="color:${color.inkSecondary};text-decoration:underline;">Privacy</a>
-        &nbsp;&middot;&nbsp;
-        <a href="${env.FRONTEND_URL}/terms" style="color:${color.inkSecondary};text-decoration:underline;">Terms</a>
-      </p>
+      ${footer}
     </td>
   </tr>
     </table>
@@ -181,6 +188,64 @@ function layout(title: string, preheader: string, blocks: string) {
   </td></tr>
 </table>
 </body></html>`;
+}
+
+// ── Waitlist ─────────────────────────────────────────────────────────────────
+
+function waitlistFooter(unsubscribeUrl: string) {
+  return `<p style="margin:0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
+        You're getting this because you joined the DirectRef waitlist. We'll only email you about DirectRef opening.
+      </p>
+      <p style="margin:10px 0 0 0;font:400 12px/1.6 ${FONT};color:${color.inkMuted};">
+        <a href="${unsubscribeUrl}" style="color:${color.inkSecondary};text-decoration:underline;">Unsubscribe</a>
+        &nbsp;&middot;&nbsp;
+        <a href="${env.FRONTEND_URL}/privacy" style="color:${color.inkSecondary};text-decoration:underline;">Privacy</a>
+      </p>`;
+}
+
+// PLACEHOLDER COPY (2026-09-29) — Shai and Anat are writing the final wording.
+// Replace the strings below; the structure (one email per role, unsubscribe
+// link in the footer) is what the waitlist spec requires.
+const WAITLIST_COPY = {
+  seeker: {
+    subject: "You're on the DirectRef waitlist",
+    preheader: "We'll email you the moment positions are live.",
+    heading: "You're on the list",
+    body: [
+      "We're lining up roles with insiders who can refer you: real employees who'll put your CV in front of the people who decide.",
+      "We'll email you the moment positions are live. Until then, there's nothing you need to do.",
+    ],
+  },
+  referrer: {
+    subject: "You're on the DirectRef waitlist",
+    preheader: "We'll let you know when you can post the roles you can refer into.",
+    heading: "You're on the list",
+    body: [
+      "We're getting ready to open DirectRef. You'll be among the first to post the roles you can refer into, and to hear from people worth referring.",
+      "We'll email you as soon as posting opens. Until then, there's nothing you need to do.",
+    ],
+  },
+} as const;
+
+/** Sent once, when someone first joins a waitlist. */
+export async function sendWaitlistConfirmationEmail(
+  to: string,
+  role: 'seeker' | 'referrer',
+  unsubscribeToken: string,
+): Promise<void> {
+  const copy = WAITLIST_COPY[role];
+  const unsubscribeUrl = `${env.FRONTEND_URL}/waitlist/unsubscribe?token=${unsubscribeToken}`;
+  await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to,
+    subject: copy.subject,
+    html: layout(
+      copy.subject,
+      copy.preheader,
+      [eyebrow('Waitlist'), heading(copy.heading), ...copy.body.map((p) => text(p))].join('\n'),
+      waitlistFooter(unsubscribeUrl),
+    ),
+  });
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { mkt } from '@/app/(marketing)/tokens';
+import { WaitlistButton } from './Waitlist';
 
 interface MarketingHeaderProps {
   /** 'home' shows the full anchor nav. 'sub' shows a back-home link instead. */
@@ -49,13 +50,17 @@ export function MarketingHeader({ variant = 'home' }: MarketingHeaderProps) {
               <Link href="/our-story" className="hidden sm:inline" style={navLinkStyle}>Our story</Link>
             </>
           )}
-          <Link
-            href="/login"
-            className="rounded-[10px] px-3.5 py-1.5 text-[13.5px] font-medium"
+          {/* Not "Sign in": the marketing site no longer links into the app
+              while positions are being gathered. Beta users go to /login
+              directly. */}
+          <WaitlistButton
+            role={null}
+            source="nav"
+            className="rounded-[10px] px-3.5 py-1.5 text-[13.5px] font-medium whitespace-nowrap"
             style={{ border: `1px solid ${mkt.borderStrong}`, color: mkt.textPrimary }}
           >
-            Sign in
-          </Link>
+            Join the waitlist
+          </WaitlistButton>
         </nav>
       </div>
     </header>

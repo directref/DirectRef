@@ -1,6 +1,7 @@
 import { db } from '../../config/db';
 import { users, jobs, applications, connections, invites } from '../../db/schema';
 import { eq, gte, desc, count, and, sql } from 'drizzle-orm';
+import { getWaitlistStats } from '../waitlist/waitlist.service';
 
 export async function getStats() {
   const now = new Date();
@@ -80,6 +81,8 @@ export async function getStats() {
       total: totalInvites.count,
       used:  usedInvites.count,
     },
+    // Pre-launch signal: how many people are waiting, per list.
+    waitlist: await getWaitlistStats(),
     topCompanies,
     userGrowth,
   };
