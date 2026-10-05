@@ -508,6 +508,42 @@ export async function updateStatus(
   return updated;
 }
 
+/**
+ * WHY: opening a C.V. (preview or download) is the moment it stops being new.
+ * WHAT: flips submitted → viewed and tells the seeker — ONLY if it is still
+ *   'submitted' at the moment of writing. Returns whether it changed.
+ * CONNECTION: called fire-and-forget by getCVPreviewPath and getCVPath.
+ *
+ * The status condition lives in the UPDATE itself, not in an earlier read.
+ * The Download button sends PATCH forwarded and the browser starts the file
+ * request a few milliseconds later, so the download can read 'submitted'
+ * while 'forwarded' is being written. An unconditional write then landed
+ * second and reverted the application to 'viewed': the referrer saw Download
+ * again and Clock B never started. (Found by referrer-inbox.spec.ts.)
+ */
+export async function markViewedIfNew(applicationId: string): Promise<boolean> {
+  const [changed] = await db.update(applications)
+    .set({ status: 'viewed', viewedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(applications.id, applicationId), eq(applications.status, 'submitted')))
+    .returning({ jobId: applications.jobId, seekerId: applications.seekerId, referrerId: applications.referrerId });
+  if (!changed) return false;
+
+  const [job]      = await db.select().from(jobs).where(eq(jobs.id, changed.jobId)).limit(1);
+  const [referrer] = await db.select().from(users).where(eq(users.id, changed.referrerId)).limit(1);
+  if (job && referrer) {
+    const appsUrl = `${env.FRONTEND_URL}/applications`;
+    await createNotification(
+      changed.seekerId,
+      'cv_viewed',
+      `${referrer.fullName} viewed your CV`,
+      `Your CV for ${job.title} at ${job.companyName} was reviewed.`,
+      appsUrl,
+    ).catch(() => {});
+    // "CV viewed" email paused — the seeker's first email is the download, not the view.
+  }
+  return true;
+}
+
 /** Stream CV file inline (for viewing in browser) */
 export async function getCVPreviewPath(applicationId: string, userId: string): Promise<{ filePath: string; mimeType: string }> {
   const [app] = await db.select().from(applications).where(eq(applications.id, applicationId)).limit(1);
@@ -521,24 +557,9 @@ export async function getCVPreviewPath(applicationId: string, userId: string): P
     throw new AppError(404, 'FILE_NOT_FOUND', 'CV file not found on server');
   }
 
-  // Auto-mark as viewed when referrer previews
+  // Auto-mark as viewed when referrer previews (conditional — see markViewedIfNew)
   if (app.referrerId === userId && app.status === 'submitted') {
-    db.update(applications)
-      .set({ status: 'viewed', viewedAt: new Date(), updatedAt: new Date() })
-      .where(eq(applications.id, applicationId))
-      .execute()
-      .then(async () => {
-        const [job]      = await db.select().from(jobs).where(eq(jobs.id, app.jobId)).limit(1);
-        const [seeker]   = await db.select().from(users).where(eq(users.id, app.seekerId)).limit(1);
-        const [referrer] = await db.select().from(users).where(eq(users.id, app.referrerId)).limit(1);
-        if (job && seeker && referrer) {
-          const appsUrl = `${env.FRONTEND_URL}/applications`;
-          createNotification(seeker.id, 'cv_viewed', `${referrer.fullName} viewed your CV`, `Your CV for ${job.title} at ${job.companyName} was reviewed.`, appsUrl).catch(() => {});
-          // "CV viewed" email paused — the seeker's first email is the download, not the view.
-          // sendCVViewedEmail(seeker.email, seeker.fullName, referrer.fullName, job.title, job.companyName, appsUrl)
-          //   .catch((err) => console.error('[email] CV viewed notify failed:', err));
-        }
-      }).catch(() => {});
+    markViewedIfNew(applicationId).catch(() => {});
   }
 
   return { filePath, mimeType: app.cvMimetype };
@@ -557,39 +578,9 @@ export async function getCVPath(applicationId: string, userId: string): Promise<
     throw new AppError(404, 'FILE_NOT_FOUND', 'CV file not found on server');
   }
 
-  // Auto-mark as viewed when referrer downloads — and notify the seeker
+  // Auto-mark as viewed when referrer downloads (conditional — see markViewedIfNew)
   if (app.referrerId === userId && app.status === 'submitted') {
-    db.update(applications)
-      .set({ status: 'viewed', viewedAt: new Date(), updatedAt: new Date() })
-      .where(eq(applications.id, applicationId))
-      .execute()
-      .then(async () => {
-        // Notify the seeker that their CV was viewed
-        const [job]        = await db.select().from(jobs).where(eq(jobs.id, app.jobId)).limit(1);
-        const [seeker]     = await db.select().from(users).where(eq(users.id, app.seekerId)).limit(1);
-        const [referrer]   = await db.select().from(users).where(eq(users.id, app.referrerId)).limit(1);
-        if (job && seeker && referrer) {
-          const appsUrl = `${env.FRONTEND_URL}/applications`;
-          // In-app notification
-          createNotification(
-            seeker.id,
-            'cv_viewed',
-            `${referrer.fullName} viewed your CV`,
-            `Your CV for ${job.title} at ${job.companyName} was reviewed.`,
-            appsUrl,
-          ).catch(() => {});
-          // "CV viewed" email paused — the seeker's first email is the download, not the view.
-          // sendCVViewedEmail(
-          //   seeker.email,
-          //   seeker.fullName,
-          //   referrer.fullName,
-          //   job.title,
-          //   job.companyName,
-          //   appsUrl,
-          // ).catch((err) => console.error('[email] CV viewed notify failed:', err));
-        }
-      })
-      .catch(() => {});
+    markViewedIfNew(applicationId).catch(() => {});
   }
 
   return { filePath, originalName: app.cvOriginalName };
