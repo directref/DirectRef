@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**271 scenarios**: 240 backend (vitest) + 31 end-to-end (Playwright).
+**366 scenarios**: 305 backend (vitest) + 61 end-to-end (Playwright).
 
 ## The three groups
 
@@ -32,7 +32,7 @@ Last nightly report: **https://directref.github.io/DirectRef/**
 
 ---
 
-## End-to-end (Playwright) — 31 scenarios
+## End-to-end (Playwright) — 61 scenarios
 
 Drives the real frontend against the real backend on a throwaway Postgres.
 
@@ -66,6 +66,63 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 - a C.V. sent on this deployment reaches the referrer intact
 - it cleans up after itself
+
+### Autofill from a real job page
+
+`@refer`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a readable job page fills the form, and the posting goes live
+
+### Browse Jobs shows every live role
+
+`@jobs`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when the jobs module changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a role is still findable when more than 20 are live
+
+### browsing and filtering jobs
+
+`@jobs`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when the jobs module changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- the search box narrows the list, and a job card opens its detail page
+- the Company filter shows only that company, and Clear brings everything back
+- no matches shows a clear empty state with a way back, not a blank page
+- the same city typed two ways is one Location entry
+- a saved job waits on the Saved tab, and Remove takes it off
+
+### entering a job by hand
+
+`@refer`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- "Enter manually instead" asks for the job link and publishes
+- without a link, nothing is sent and no credit is spent
 
 ### in-app messaging
 
@@ -101,6 +158,65 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - /privacy renders
 - the site is not indexable while the beta is closed
 
+### messaging screen
+
+`@messaging`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a message typed on screen reaches the referrer, and their reply shows up
+
+### Needs your attention
+
+`@apply`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- shows the application waiting on the referrer, and which day of five it is
+- shows the referrer the C.V. that needs their decision
+
+### posting a job through the screen
+
+`@refer` `@credits`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes, or credits change |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- paste a link, fill the form, post — it is listed and costs one credit
+- Autofill that finds nothing says so, instead of claiming success
+- Buying credits cannot be reached anywhere in the app
+
+### referrer CV inbox
+
+`@refer`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- shows the seeker, the role, their note, the CV and when they applied
+- Download, then "Submitted": the application ends up submitted internally
+- "Not a fit" on a new C.V. closes it, and the seeker sees the answer
+- "Not a fit" after downloading is still possible
+- a C.V. the seeker withdrew is shown as withdrawn, with nothing to decide
+
 ### referrer declines
 
 `@refer`
@@ -131,6 +247,32 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - a wrong password is rejected and does not let anyone in
 - an anonymous visitor is sent to login when reaching for the app
 
+### response record in the Send CV window
+
+`@apply`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- shows "Answered 1 of 1" for a referrer with history, and "New referrer" for one without
+
+### response record on the job page
+
+`@apply`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- uses the same honest wording as the Send CV window
+
 ### seeker withdraws
 
 `@apply`
@@ -145,6 +287,46 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - can pull a C.V. back before it has been opened
 - cannot withdraw once the referrer has downloaded it
 - one seeker cannot withdraw another seeker's application
+
+### settings
+
+`@auth`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when auth or invites change |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- an account with both Google and LinkedIn connected shows both
+- an email-and-password account says so
+
+### signed-out visitors
+
+`@refer` `@auth`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes, or auth or invites change |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- reaching for Post a job sends a signed-out visitor to log in, and back afterwards
+
+### the C.V. on file
+
+`@apply`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- pre-fills the apply modal and is sent without uploading anything
 
 ### the referral flow
 
@@ -175,9 +357,25 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - the neutral CTA lets the visitor say they are a referrer
 - a malformed email is refused with a message, and stores nothing
 
+### withdraw flow
+
+`@apply`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a seeker withdraws a C.V. the referrer has not opened yet
+- after withdrawing, the seeker can send a C.V. to the same role again
+- cancelling the confirmation keeps the application
+- once the referrer downloads the C.V., Withdraw is no longer offered
+
 ---
 
-## Backend integration (vitest) — 240 scenarios
+## Backend integration (vitest) — 305 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -185,6 +383,58 @@ because nobody waits five days.
 
 Runs on the nightly, and on any push touching `apps/backend/**`. Never runs
 against production.
+
+### `src/modules/applications/applying.test.ts`
+
+**one application per seeker per role**
+
+- a second application to the same role is refused, and the first is untouched
+- after withdrawing an unopened C.V., the seeker can apply again — with a fresh clock
+- once the referrer has opened the C.V., the seeker cannot apply again
+- whatever the referrer answered, the seeker cannot apply again
+- a referrer cannot apply to their own posting
+
+**previewing a C.V. in the browser**
+
+- shows the referrer the PDF inline, marks it viewed, and tells the seeker
+- nobody outside the application can preview it
+
+**the C.V. on file**
+
+- can be used to apply without uploading anything
+- applying "with the C.V. on file" when there is none is refused clearly
+- replacing it later does not change the C.V. a referrer already has
+- removing it does not take the C.V. away from a referrer who has it
+- a seeker can swap the C.V. on an application the referrer has not opened yet
+- but not once the referrer has opened it
+
+**the withdraw window**
+
+- a seeker can withdraw an unopened C.V., and the referrer is told
+- once the referrer has previewed it, withdrawing is refused
+
+### `src/modules/applications/outcomeNotices.test.ts`
+
+**messages**
+
+- a new message notifies the other side in the app and by email, linking to that thread
+- the thread stays open after "Not a fit" — the seeker can still ask for feedback
+- the thread stays open after an auto-close and after "Submitted" too
+
+**the notifications page**
+
+- lists my notifications newest first, with an unread count
+- opening one marks just that one read
+- "Mark all as read" clears the count
+- nobody sees, or can mark, anyone else's notifications
+
+**the seeker hears about every decision**
+
+- a new C.V. reaches the referrer in the app and by email
+- "Not a fit": the seeker is told in the app and by email
+- the referrer downloads the C.V.: the seeker is told in the app and by email
+- "Submitted": the seeker is told in the app and by email
+- a decision on a closed application is refused, so the seeker never gets two contradicting notices
 
 ### `src/modules/applications/responseStats.test.ts`
 
@@ -212,6 +462,23 @@ against production.
 - a referrer with no applications at all has no record
 - a referrer whose only applications are still open has no record yet
 - ignores withdrawn applications — the seeker pulled out, not the referrer
+
+### `src/modules/auth/accountEmails.test.ts`
+
+**confirming an email address**
+
+- the emailed link marks the address confirmed
+- a made-up link is refused and confirms nobody
+- confirming a company address also verifies it as the work email
+- confirming a Gmail address does not make it a work email
+
+**forgot password → email link → new password**
+
+- emails a reset link and the link sets a new password that logs in
+- a reset link works once — the second click is refused
+- a link older than an hour is refused
+- answers an unknown address exactly like a real one, and sends nothing
+- refuses a weak new password
 
 ### `src/modules/credits/credits.test.ts`
 
@@ -268,6 +535,38 @@ against production.
 - two people sharing a first name both get in
 - two people with Hebrew names both get in
 
+### `src/modules/jobs/postings.test.ts`
+
+**deactivating and reactivating a posting**
+
+- a deactivated posting disappears from search and accepts no new C.V.s
+- starts the 30-day deletion clock
+- tells seekers whose C.V. is still waiting, and nobody whose was already handled
+- switching it back on makes it visible again and cancels the deletion clock
+- "Delete" from My postings only deactivates — the applications on it survive
+
+**editing a posting**
+
+- the owner can fix the title
+- nobody else can edit or close it
+
+**two colleagues post the same opening**
+
+- seekers see one listing carrying both referrers
+- a different link stays a separate listing — there is no fuzzy matching
+- applying through one colleague counts as applied to the shared listing
+
+### `src/modules/jobs/suggestedJobs.test.ts`
+
+**Suggested for you**
+
+- shows nothing to a seeker who set no preferences
+- matches the desired role through the words real postings use
+- matches a region through the cities inside it
+- requires EVERY preference to match, not just one
+- treats "mid" as "neither senior nor junior"
+- never suggests a closed posting, a test account posting, or my own
+
 ### `src/modules/jobs/testAccountIsolation.test.ts`
 
 **a test account's postings are invisible to everyone else**
@@ -293,6 +592,15 @@ against production.
 - marks an account registered on a .test address
 - leaves a real account alone
 
+### `src/modules/savedJobs/savedJobs.test.ts`
+
+**saving a job for later**
+
+- a saved job shows up in the Saved list, and unsaving removes it
+- saving twice keeps one entry
+- each seeker sees only their own saved jobs
+- requires being logged in
+
 ### `src/modules/users/deleteAccount.test.ts`
 
 **deleting a referrer**
@@ -312,6 +620,23 @@ against production.
 - works for an account with nothing attached
 - completes even when a C.V. file is already gone
 - rejects an account that does not exist
+
+### `src/modules/users/workEmail.test.ts`
+
+**posting is blocked before any credit is spent**
+
+- no verified work email: refused, and the balance is untouched
+- submitted but not yet clicked counts as unverified
+- verified at a different company: refused, and the balance is untouched
+- verified at the right company: posts, and costs exactly one credit
+
+**verifying a work email**
+
+- submitting an address emails a link, and the link verifies it
+- tells the referrer they can post now — in the app and by email
+- refuses a personal mailbox outright
+- refuses a link older than an hour
+- changing to a new work email takes away the old verification until the new one is clicked
 
 ### `src/modules/waitlist/waitlist.test.ts`
 

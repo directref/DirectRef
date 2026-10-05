@@ -47,7 +47,7 @@ function StatusBadge({ status }: { status: string }) {
   let badge: React.ReactNode;
   if (status === 'forwarded' || status === 'internally_submitted') {
     badge = (
-      <span tabIndex={0} className="bg-good/15 text-good border border-good/25 rounded-full whitespace-nowrap cursor-help" style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 14px' }}>
+      <span data-testid="application-status" tabIndex={0} className="bg-good/15 text-good border border-good/25 rounded-full whitespace-nowrap cursor-help" style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 14px' }}>
         {label}
       </span>
     );
@@ -61,7 +61,7 @@ function StatusBadge({ status }: { status: string }) {
     };
     const c = colors[status] ?? { bg: 'oklch(0.93 0.004 70)', color: MUTED };
     badge = (
-      <span tabIndex={0} className="cursor-help" style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 14px', borderRadius: 100, background: c.bg, color: c.color, whiteSpace: 'nowrap' }}>
+      <span data-testid="application-status" tabIndex={0} className="cursor-help" style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 14px', borderRadius: 100, background: c.bg, color: c.color, whiteSpace: 'nowrap' }}>
         {label}
       </span>
     );
@@ -99,7 +99,7 @@ function SentAppRow({
   const unreadCount = msgData?.unreadCount ?? 0;
 
   return (
-    <div style={{ background: BG, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div data-testid="sent-application" style={{ background: BG, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Header: icon + company/title + status badge */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -131,6 +131,7 @@ function SentAppRow({
                 {replacingId === a.application.id ? 'Replacing…' : 'Replace CV'}
               </button>
               <button
+                data-testid="withdraw-application"
                 onClick={() => onWithdrawClick(a.application.id)}
                 style={{ border: `1px solid ${BORDER}`, background: 'transparent', color: 'oklch(0.55 0.15 30)', fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 9, cursor: 'pointer' }}
               >
@@ -139,6 +140,7 @@ function SentAppRow({
             </>
           )}
           <button
+            data-testid="open-messages"
             onClick={() => onMessageOpen(a.application.id)}
             style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${BORDER}`, background: 'transparent', color: 'oklch(0.47 0.008 60)', fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 9, cursor: 'pointer' }}
           >

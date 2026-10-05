@@ -104,6 +104,7 @@ function InboxListRow({
 
   return (
     <button
+      data-testid="inbox-row"
       onClick={onSelect}
       className={cn(
         'text-left bg-card border rounded-xl px-4 py-3.5 transition-colors cursor-pointer',
@@ -122,6 +123,7 @@ function InboxListRow({
             {/* No tabIndex here — this row is already a <button>; a focusable
                 child inside it would be a nested-interactive-element a11y bug. */}
             <span
+              data-testid="inbox-row-status"
               className={cn(
                 'shrink-0 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-help',
                 STATUS_COLORS[a.application.status],
@@ -337,7 +339,7 @@ function DetailPanel({
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6">
+    <div data-testid="inbox-detail" className="bg-card border border-border rounded-2xl p-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-5">
         <div className="flex items-center gap-3 min-w-0">
@@ -397,6 +399,7 @@ function DetailPanel({
           </p>
           <div className="flex gap-3">
             <Button
+              data-testid="inbox-submitted"
               variant="primary"
               onClick={handleConfirmSubmitted}
               isLoading={busy === 'confirm'}
@@ -406,6 +409,7 @@ function DetailPanel({
               Submitted
             </Button>
             <Button
+              data-testid="inbox-not-a-fit"
               variant="secondary"
               onClick={handleNotAFit}
               isLoading={busy === 'reject'}
@@ -418,7 +422,7 @@ function DetailPanel({
         </div>
       ) : application.status === 'internally_submitted' ? (
         <div className="space-y-3">
-          <p className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
+          <p data-testid="inbox-outcome" className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
             <CheckIcon /> Submitted internally.
           </p>
           <Button
@@ -432,7 +436,7 @@ function DetailPanel({
           </Button>
         </div>
       ) : isDecided ? (
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
+        <p data-testid="inbox-outcome" className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
           <CheckIcon />
           {application.status === 'expired'
             ? "This application expired because the referrer didn't respond within 5 days."
@@ -443,6 +447,7 @@ function DetailPanel({
       ) : (
         <div className="flex gap-3">
           <Button
+            data-testid="inbox-download"
             variant="primary"
             onClick={handleDownload}
             isLoading={busy === 'download'}
@@ -452,6 +457,7 @@ function DetailPanel({
             Download
           </Button>
           <Button
+            data-testid="inbox-not-a-fit"
             variant="secondary"
             onClick={handleNotAFit}
             isLoading={busy === 'reject'}
