@@ -258,7 +258,7 @@ export default function PostJobPage() {
             {jobs.map((job) => {
               const href = `/jobs/${jobSlug(job.title, job.id)}`;
               return (
-                <Card key={job.id} hover className="p-4" onClick={() => router.push(href)}>
+                <Card key={job.id} data-testid="my-posting" hover className="p-4" onClick={() => router.push(href)}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <Link href={href} className="font-bold text-text-primary text-sm hover:text-gold-300" onClick={(e) => e.stopPropagation()}>

@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { db } from '../../config/db';
 import { applications } from '../../db/schema';
-import { makeReferrer, makeSeeker, makeJob, makeApplication } from '../../test/factories';
+import { makeReferrer, makeSeeker, makeJob, makeApplication, makeScenario } from '../../test/factories';
+import { markViewedIfNew } from './applications.service';
 import { useServer, as, pdf, waitForNotification } from '../../test/http';
 
 /**
@@ -216,5 +217,48 @@ describe('previewing a C.V. in the browser', () => {
 
     expect([403, 404]).toContain((await as(base, stranger.id).get(`/api/applications/${id}/cv/preview`)).status);
     expect((await as(base, null).get(`/api/applications/${id}/cv/preview`)).status).toBe(401);
+  });
+});
+
+describe('opening a C.V. never undoes a later decision', () => {
+  // Regression, found by referrer-inbox.spec.ts: the Download button sends
+  // PATCH forwarded and the browser starts the file request milliseconds
+  // later, so the download read 'submitted' while 'forwarded' was being
+  // written, then its unconditional "mark viewed" landed second and reverted
+  // the application. The interleaving is timing-dependent, so these tests
+  // pin the rule that makes it impossible: the write itself only changes a
+  // C.V. that is still 'submitted'.
+  it.each(['forwarded', 'internally_submitted', 'rejected', 'withdrawn', 'expired'])(
+    'a stale "mark viewed" leaves a %s application alone',
+    async (status) => {
+      const { application, seeker } = await makeScenario({ status });
+
+      expect(await markViewedIfNew(application.id)).toBe(false);
+
+      expect((await db.select().from(applications).where(eq(applications.id, application.id)))[0].status).toBe(status);
+      expect(await waitForNotification(seeker.id, 'cv_viewed', 200)).toHaveLength(0);
+    },
+  );
+
+  it('a new C.V. becomes viewed, and the seeker is told once', async () => {
+    const { application, seeker } = await makeScenario({ status: 'submitted' });
+
+    expect(await markViewedIfNew(application.id)).toBe(true);
+    expect(await markViewedIfNew(application.id)).toBe(false);
+
+    const [row] = await db.select().from(applications).where(eq(applications.id, application.id));
+    expect(row.status).toBe('viewed');
+    expect(row.viewedAt).not.toBeNull();
+    expect(await waitForNotification(seeker.id, 'cv_viewed')).toHaveLength(1);
+  });
+
+  it('previewing after a decision does not reopen it', async () => {
+    const { seekerApi, referrerApi, job } = await scenario();
+    const id = await appId(await apply(seekerApi, job.id, {}, pdf()));
+    await referrerApi.patch(`/api/applications/${id}/status`, { status: 'rejected' });
+
+    await referrerApi.get(`/api/applications/${id}/cv/preview`);
+
+    expect((await db.select().from(applications).where(eq(applications.id, id)))[0].status).toBe('rejected');
   });
 });
