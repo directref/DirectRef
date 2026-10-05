@@ -87,6 +87,10 @@ export default defineConfig({
         RATE_LIMIT_API_MAX: '100000',
         RATE_LIMIT_UPLOAD_MAX: '10000',
         RATE_LIMIT_SCRAPE_MAX: '10000',
+        // Autofill refuses private addresses (services/safeFetch.ts), and the
+        // posting.spec Autofill test serves its fake job page from 127.0.0.1.
+        // Test-only: safeFetch ignores this whenever NODE_ENV is production.
+        SCRAPE_ALLOW_PRIVATE_HOSTS: 'true',
       },
     },
     {

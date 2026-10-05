@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**368 scenarios**: 306 backend (vitest) + 62 end-to-end (Playwright).
+**410 scenarios**: 348 backend (vitest) + 62 end-to-end (Playwright).
 
 ## The three groups
 
@@ -376,7 +376,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 306 scenarios
+## Backend integration (vitest) — 348 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -907,6 +907,68 @@ against production.
 - falls back the same way when the page fetch throws outright (timeout, DNS, etc.)
 - still returns nothing — never throws — when a blocked page carries no ATS id to fall back on
 - still returns nothing when the Greenhouse fallback itself has no match either
+
+### `src/services/safeFetch.test.ts`
+
+**a public-looking name that resolves to a private address**
+
+- is refused at connect time by the DNS check
+- passes the DNS answer through when it is public
+
+**redirects are checked hop by hop**
+
+- follows a redirect between public pages
+- refuses a public page that redirects to a private address
+- gives up after too many redirects
+- never lets node-fetch follow redirects on its own
+
+**refused before any connection is made**
+
+- cloud metadata
+- loopback
+- localhost by name
+- a private network host
+- IPv6 loopback
+- loopback written as one hex number
+- loopback written in decimal
+- a file on disk
+- another protocol
+- not a URL at all
+
+**the test-only switch**
+
+- lets a local test page through when SCRAPE_ALLOW_PRIVATE_HOSTS=true
+- is ignored in production, whatever it is set to
+
+**what the user sees**
+
+- Autofill on a private address finds nothing, the same as an unreadable page
+- the liveness check treats a private address as unknown, never dead
+
+**which addresses are private**
+
+- blocks 127.0.0.1
+- blocks 127.8.8.8
+- blocks 10.0.0.5
+- blocks 172.16.0.1
+- blocks 172.31.255.255
+- blocks 192.168.1.1
+- blocks 169.254.169.254
+- blocks 100.64.0.1
+- blocks 0.0.0.0
+- blocks 224.0.0.1
+- blocks ::1
+- blocks ::
+- blocks fc00::1
+- blocks fd12:3456::1
+- blocks fe80::1
+- blocks ::ffff:10.0.0.5
+- blocks ::ffff:127.0.0.1
+- blocks [::1]
+- allows the public address 8.8.8.8
+- allows the public address 104.16.0.1
+- allows the public address 172.32.0.1
+- allows the public address 2606:4700::1111
 
 ### `src/services/waitlistSegments.test.ts`
 

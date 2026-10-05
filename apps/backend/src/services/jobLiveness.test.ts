@@ -155,11 +155,20 @@ describe('how it asks', () => {
     // Plenty of careers pages redirect, and a bare fetch user-agent is widely
     // blocked — which would return 403 and, correctly, 'unknown' forever,
     // quietly making the whole sweep useless.
-    fetchMock.mockResolvedValue(page(200, ''));
-    await checkJobLiveness('https://acme.test/careers/1');
+    // Redirects are followed by safeFetch one hop at a time (each hop is
+    // checked against private addresses), so assert the behaviour — the
+    // second request goes to the Location — not a node-fetch option.
+    fetchMock
+      .mockResolvedValueOnce({ status: 301, ok: false, headers: { get: () => '/careers/1-renamed' }, text: async () => '' })
+      .mockResolvedValueOnce(page(200, ''));
 
+    expect(await checkJobLiveness('https://acme.test/careers/1')).toBe('alive');
+
+    expect(fetchMock.mock.calls.map(([u]) => u)).toEqual([
+      'https://acme.test/careers/1',
+      'https://acme.test/careers/1-renamed',
+    ]);
     const [, options] = fetchMock.mock.calls[0] as [string, Record<string, unknown>];
-    expect(options.redirect).toBe('follow');
     expect(String((options.headers as Record<string, string>)['User-Agent'])).toMatch(/Mozilla/);
   });
 

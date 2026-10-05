@@ -1,4 +1,7 @@
-import fetch from 'node-fetch';
+// Every fetch in this file goes through safeFetch: these URLs come from a
+// user's paste or from the page itself, so none of them may reach our own
+// network (SSRF). See services/safeFetch.ts.
+import { safeFetch as fetch } from './safeFetch';
 
 export interface ScrapedJob {
   title?: string;
@@ -453,7 +456,6 @@ export async function scrapeJobUrl(url: string): Promise<ScrapedJob> {
         'Accept-Language': 'en-US,en;q=0.9',
       },
       timeout: 10000,
-      redirect: 'follow',
     });
 
     if (!res.ok) return (await tryAtsApisWithoutHtml(url)) ?? {};
@@ -637,7 +639,6 @@ export async function checkJobLiveness(url: string): Promise<LivenessResult> {
         Accept: 'text/html,application/xhtml+xml',
       },
       timeout: 10000,
-      redirect: 'follow',
     });
 
     if (res.status === 404 || res.status === 410) return 'dead';
