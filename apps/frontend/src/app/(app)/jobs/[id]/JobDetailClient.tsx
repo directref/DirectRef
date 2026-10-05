@@ -9,7 +9,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { SendCVModal } from '@/components/application/SendCVModal';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useAppliedJobIds } from '@/lib/hooks/useApplications';
-import { cn } from '@/lib/utils';
+import { cn, formatTypicalReply, responseToneClass } from '@/lib/utils';
 import type { JobWithReferrer } from '@/lib/types';
 import Link from 'next/link';
 
@@ -79,18 +79,27 @@ export default function JobDetailClient({ data }: { data: JobWithReferrer }) {
                 </h2>
                 <div className="bg-jobs-surface border border-jobs-border rounded-lg p-4 space-y-4">
                   {referrers.map((r) => {
-                    const score = r.responseStats?.score;
                     return (
-                      <div key={r.id} className="flex items-center gap-3">
+                      <div key={r.id} data-testid="person-inside" className="flex items-center gap-3">
                         <Avatar src={r.avatarUrl} name={r.fullName} size="sm" className="w-9 h-9" />
                         <div className="min-w-0">
                           <p className="text-[14px] font-semibold text-jobs-ink">{r.fullName}</p>
                           <p className="text-[13px] text-jobs-ink-muted truncate">
                             {r.headline ?? (r.companyName ? `Works at ${r.companyName}` : '')}
                           </p>
-                          {score != null && (
-                            <p className={cn('text-[12px] font-medium mt-0.5', score >= 75 ? 'text-jobs-success' : 'text-jobs-ink-muted')}>
-                              Responds {score}% of the time
+                          {/* Same words as the Send CV window. This used to read
+                              "Responds N% of the time" over responseStats.score,
+                              which is a speed-weighted index, not a percentage —
+                              a referrer who answered 1 of 1 showed as 70%. */}
+                          {r.responseStats ? (
+                            <p className={cn('text-[12px] font-medium mt-0.5', responseToneClass(r.responseStats.band))}>
+                              Answered {r.responseStats.decided} of {r.responseStats.total}
+                              {' · '}
+                              {formatTypicalReply(r.responseStats.medianHours)}
+                            </p>
+                          ) : (
+                            <p className="text-[12px] font-medium mt-0.5 text-jobs-ink-muted">
+                              New referrer, no track record yet
                             </p>
                           )}
                         </div>

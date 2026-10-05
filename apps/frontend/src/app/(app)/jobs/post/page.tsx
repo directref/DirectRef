@@ -86,13 +86,20 @@ export default function PostJobPage() {
 
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
+    const sourceUrl = (form.sourceUrl || url).trim();
+    // Every posting needs its link: it is how seekers see the real listing,
+    // how the work-email check matches the company, and how two colleagues
+    // posting the same opening end up on one listing. "Enter manually
+    // instead" used to skip this field entirely, so the server refused the
+    // post ("Must be a valid URL") and manual entry could never publish.
+    if (!/^https?:\/\/\S+\.\S+/.test(sourceUrl)) { toast.error('Add the link to the job listing (starting with https://)'); return; }
     if (!form.title.trim())       { toast.error('Job title is required'); return; }
     if (!form.companyName.trim()) { toast.error('Company name is required'); return; }
     if (balance && balance.total <= 0) { setOutOfCreditsOpen(true); return; }
     setIsSubmitting(true);
     try {
       await jobsApi.create({
-        sourceUrl:   form.sourceUrl || url,
+        sourceUrl,
         title:       form.title,
         companyName: form.companyName,
         location:    form.location    || undefined,
@@ -196,6 +203,7 @@ export default function PostJobPage() {
                 <span className="text-xs text-good font-medium">Details filled in — review and edit if needed</span>
               </div>
             )}
+            <Input label="Job link *" type="url" value={form.sourceUrl} onChange={set('sourceUrl')} placeholder="https://careers.company.com/jobs/..." required />
             <Input label="Job title *" value={form.title} onChange={set('title')} placeholder="Senior Software Engineer" required />
             <Input label="Company name *" value={form.companyName} onChange={set('companyName')} placeholder="Microsoft" required autoComplete="off" />
             <Input label="Location" value={form.location} onChange={set('location')} placeholder="Tel Aviv / Remote" />

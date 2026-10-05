@@ -1,6 +1,5 @@
 'use client';
 
-import type { ResponseBand } from '@contracts';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -13,7 +12,7 @@ import { usersApi } from '@/lib/api/users';
 import { optimisticAddApplication } from '@/lib/hooks/useApplications';
 import { useAuth } from '@/lib/context/AuthContext';
 import { FileText } from 'lucide-react';
-import { formatBytes, cn } from '@/lib/utils';
+import { formatBytes, cn, formatTypicalReply, responseToneClass } from '@/lib/utils';
 import { ApiError, ensureFreshSession } from '@/lib/api/client';
 import type { Job, JobReferrer } from '@/lib/types';
 
@@ -28,18 +27,6 @@ interface SendCVModalProps {
 /** Two states in one shell: the form, then a success view — no separate
  *  modal to swap in, so nothing can unmount mid-transition when the parent's
  *  `alreadyApplied` flips true right after submit. */
-/** Plain language beats a bare hour count at the moment someone is choosing
- *  who to trust with their C.V. */
-function formatTypicalReply(medianHours: number): string {
-  if (medianHours < 1) return 'usually replies within the hour';
-  if (medianHours <= 24) return `usually replies within ${Math.max(1, Math.round(medianHours))}h`;
-  const days = Math.round(medianHours / 24);
-  return `usually replies within ${days} day${days === 1 ? '' : 's'}`;
-}
-
-function responseToneClass(band: ResponseBand): string {
-  return band === 'green' ? 'text-jobs-success' : 'text-jobs-ink-muted';
-}
 
 export function SendCVModal({ open, onClose, onSuccess, job, referrers }: SendCVModalProps) {
   const router = useRouter();
