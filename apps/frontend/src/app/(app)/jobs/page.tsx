@@ -17,11 +17,29 @@ function normalizeLocation(loc: string) {
   return loc.trim().toLowerCase();
 }
 
+/** Every live role, not just the first page.
+ *
+ *  Search and every filter on this page run client-side over this list, so
+ *  it has to be complete: it used to call /api/jobs with no page size, the
+ *  server defaulted to 20, and the 21st-newest live role could not be found
+ *  from Browse at all. Pages through at the server's maximum until a short
+ *  page says there is nothing left. The cap is a runaway guard, far above
+ *  anything the beta will reach. */
+const PAGE_SIZE = 100;
+const MAX_PAGES = 50;
+
+async function fetchAllJobs() {
+  const all = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const { data } = await jobsApi.search({ page, limit: PAGE_SIZE });
+    all.push(...data);
+    if (data.length < PAGE_SIZE) break;
+  }
+  return all;
+}
+
 function useAllJobs() {
-  return useSWR('jobs/browse/v2', () =>
-    jobsApi.search({}).then((r) => r.data),
-    { revalidateOnMount: true },
-  );
+  return useSWR('jobs/browse/v3', fetchAllJobs, { revalidateOnMount: true });
 }
 
 // ── Reusable filter group: collapsible header + optional mini-search + checkbox list ──
@@ -44,7 +62,7 @@ function FilterGroup({ title, items, selected, onToggle, searchPlaceholder, show
   if (items.length === 0) return null;
 
   return (
-    <div className="border-b border-jobs-border pb-4 last:border-0 last:pb-0">
+    <div data-testid={`filter-${title}`} className="border-b border-jobs-border pb-4 last:border-0 last:pb-0">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -276,7 +294,7 @@ export default function JobsPage() {
               <p className="text-[13.5px] text-jobs-ink-secondary">Check your connection and try refreshing</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="bg-jobs-surface border border-jobs-border rounded-lg px-6 py-14 text-center">
+            <div data-testid="jobs-empty" className="bg-jobs-surface border border-jobs-border rounded-lg px-6 py-14 text-center">
               <Star className="w-6 h-6 mx-auto mb-3 text-jobs-ink-muted" strokeWidth={1.5} />
               <p className="text-[16.5px] font-semibold text-jobs-ink mb-1">
                 {allJobs.length === 0 ? 'No open roles yet' : 'No jobs match'}

@@ -12,6 +12,7 @@ import {
   // sendCVViewedEmail, // paused — see the commented call sites below
   sendCVDownloadedEmail,
   sendInternallySubmittedEmail,
+  sendCVRejectedEmail,
   sendNewMessageEmail,
 } from '../../services/email';
 import { env } from '../../config/env';
@@ -72,19 +73,28 @@ export async function submitApplication(
   //    posting of the same real-world listing (same sourceUrl) by a different
   //    referrer. Picking another referrer on what's visually the same grouped
   //    card still counts as "already applied" to that job.
+  //
+  //    A WITHDRAWN application does not count (product decision 2026-10-04).
+  //    Withdrawing is only possible before the referrer opens the C.V., so the
+  //    referrer never saw it and owes nothing on it — the seeker may send it
+  //    again. Once the referrer has opened it and answered (any answer), the
+  //    role stays closed to that seeker.
   const siblingJobs = await db.select({ id: jobs.id }).from(jobs).where(eq(jobs.sourceUrl, job.sourceUrl));
   const siblingJobIds = siblingJobs.map((j) => j.id);
 
-  const [existing] = await db
+  const previous = await db
     .select()
     .from(applications)
-    .where(and(inArray(applications.jobId, siblingJobIds), eq(applications.seekerId, seekerId)))
-    .limit(1);
+    .where(and(inArray(applications.jobId, siblingJobIds), eq(applications.seekerId, seekerId)));
 
-  if (existing) {
+  if (previous.some((a) => a.status !== 'withdrawn')) {
     cleanupUploadedFile();
     throw new AppError(409, 'ALREADY_APPLIED', 'You have already sent your CV for this job');
   }
+  // (job_id, seeker_id) is unique, so re-applying to the SAME posting reuses
+  // the withdrawn row rather than inserting a second one. Its message thread
+  // carries over; every clock starts again from now.
+  const withdrawnHere = previous.find((a) => a.jobId === dto.jobId);
 
   // 4. Resolve the CV: either the freshly uploaded file, or a copy of the
   //    seeker's profile CV (never the same file — see copyProfileCvForApplication).
@@ -95,13 +105,29 @@ export async function submitApplication(
 
   // 5. Insert application — sending a CV is free for seekers; credits only
   //    gate the referrer side (posting a job), see jobs.service.ts createJob.
-  const [application] = await db.insert(applications).values({
+  const fresh = {
     jobId: dto.jobId,
     seekerId,
     referrerId: job.referrerId,
     ...cv,
-    coverNote: dto.coverNote,
-  }).returning();
+    coverNote: dto.coverNote ?? null,
+  };
+  const [application] = withdrawnHere
+    ? await db.update(applications).set({
+        ...fresh,
+        status: 'submitted',
+        viewedAt: null,
+        forwardedAt: null,
+        withdrawnAt: null,
+        reminderSentAt: null,
+        escalatedAt: null,
+        submitReminderSentAt: null,
+        submitFollowupSentAt: null,
+        autoCancelledAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).where(eq(applications.id, withdrawnHere.id)).returning()
+    : await db.insert(applications).values(fresh).returning();
 
   // 6. Notify referrer — in-app + email (fire-and-forget)
   const [referrer] = await db.select().from(users).where(eq(users.id, job.referrerId)).limit(1);
@@ -453,6 +479,8 @@ export async function updateStatus(
           `Your application for ${job.title} at ${job.companyName} wasn't the right fit this time.`,
           appsUrl,
         ).catch(() => {});
+        sendCVRejectedEmail(seeker.email, seeker.fullName, referrer.fullName, job.title, job.companyName, appsUrl)
+          .catch((err) => console.error('[email] CV rejected notify failed:', err));
       } else if (status === 'forwarded') {
         createNotification(
           app.seekerId,

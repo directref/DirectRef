@@ -58,3 +58,13 @@ export async function waitlistRowsFor(email: string): Promise<{ role: string; so
     SELECT role, source_cta, utm_source FROM waitlist_signups WHERE email = ${email.toLowerCase()} ORDER BY role
   `;
 }
+
+/** Mark an account as linked to both Google and LinkedIn — the state the
+ *  Settings "Connect" flow produces, which needs real OAuth to reach. */
+export async function linkBothOAuthProviders(email: string): Promise<void> {
+  await db()`
+    UPDATE users
+       SET google_id = ${'g-' + email}, linkedin_id = ${'li-' + email}
+     WHERE email = ${email.toLowerCase()}
+  `;
+}
