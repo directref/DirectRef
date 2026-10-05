@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**410 scenarios**: 348 backend (vitest) + 62 end-to-end (Playwright).
+**424 scenarios**: 355 backend (vitest) + 69 end-to-end (Playwright).
 
 ## The three groups
 
@@ -32,7 +32,7 @@ Last nightly report: **https://directref.github.io/DirectRef/**
 
 ---
 
-## End-to-end (Playwright) — 62 scenarios
+## End-to-end (Playwright) — 69 scenarios
 
 Drives the real frontend against the real backend on a throwaway Postgres.
 
@@ -79,6 +79,21 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 | Production smoke | no — this group writes |
 
 - a readable job page fills the form, and the posting goes live
+- a link to a page that no longer exists (404) says so and offers the manual form
+
+### Autofill input checks
+
+`@refer`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- with the link field empty, Autofill cannot be pressed
+- text that is not a link is refused with a message, and nothing is sent
 
 ### Browse Jobs shows every live role
 
@@ -158,6 +173,20 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - /privacy renders
 - the site is not indexable while the beta is closed
 
+### Matched to your profile (Suggested for you)
+
+`@jobs`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when the jobs module changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- Home shows jobs matching the preferences the seeker saved, and not others
+- without preferences, Home invites the seeker to set them instead of guessing
+
 ### messaging screen
 
 `@messaging`
@@ -184,6 +213,19 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 - shows the application waiting on the referrer, and which day of five it is
 - shows the referrer the C.V. that needs their decision
+
+### out of credits
+
+`@refer` `@credits`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes, or credits change |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- a referrer with no credits left is told so on screen, and nothing is posted
 
 ### posting a job through the screen
 
@@ -316,6 +358,19 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 - reaching for Post a job sends a signed-out visitor to log in, and back afterwards
 
+### switching a posting off and on
+
+`@refer` `@jobs`
+
+| | |
+|---|---|
+| Runs against | a throwaway database only — never production |
+| Push gate | when application or job code changes, or the jobs module changes |
+| Nightly | yes |
+| Production smoke | no — this group writes |
+
+- the switch on Jobs I Posted hides the posting from seekers, and brings it back
+
 ### the C.V. on file
 
 `@apply`
@@ -376,7 +431,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 348 scenarios
+## Backend integration (vitest) — 355 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -394,6 +449,16 @@ against production.
 - once the referrer has opened the C.V., the seeker cannot apply again
 - whatever the referrer answered, the seeker cannot apply again
 - a referrer cannot apply to their own posting
+
+**opening a C.V. never undoes a later decision**
+
+- a stale "mark viewed" leaves a forwarded application alone
+- a stale "mark viewed" leaves a internally_submitted application alone
+- a stale "mark viewed" leaves a rejected application alone
+- a stale "mark viewed" leaves a withdrawn application alone
+- a stale "mark viewed" leaves a expired application alone
+- a new C.V. becomes viewed, and the seeker is told once
+- previewing after a decision does not reopen it
 
 **previewing a C.V. in the browser**
 

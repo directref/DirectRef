@@ -313,7 +313,7 @@ export default function FeedClient({ initialJobs }: { initialJobs: JobWithReferr
 
           {/* Matched to your profile */}
           {hasPrefs && (
-            <div>
+            <div data-testid="matched-jobs">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                 <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Matched to your profile</h2>
                 <Link href="/jobs" style={{ fontSize: 13.5, fontWeight: 600, color: 'oklch(0.5 0.02 60)', textDecoration: 'none' }}>Browse all jobs →</Link>

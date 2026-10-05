@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { createSeeker, createReferrer, createJob, applyViaApi, loginViaUi, disposeUsers, TEST_CV } from '../fixtures/seed';
 import { backdateApplication } from '../fixtures/db';
 
@@ -45,6 +46,47 @@ test.describe('Needs your attention', { tag: ['@apply'] }, () => {
     const panel = page.getByTestId('needs-attention');
     await expect(panel).toContainText('CVs waiting on your review');
     await expect(panel).toContainText(`${seeker.fullName}'s CV needs a decision from you`);
+
+    await disposeUsers(referrer, seeker);
+  });
+});
+
+test.describe('Matched to your profile (Suggested for you)', { tag: ['@jobs'] }, () => {
+  test('Home shows jobs matching the preferences the seeker saved, and not others', async ({ page }) => {
+    const t = randomUUID().slice(0, 6);
+    // A role name nobody else uses, so leftovers from other runs cannot match.
+    const role = `Zephyrologist ${t}`;
+    const referrer = await createReferrer(`match${t}.test`, { visibleInBrowse: true });
+    const seeker = await createSeeker();
+    const match = await createJob(referrer, { title: `Senior ${role}`, location: 'Haifa' });
+    const otherCity = await createJob(referrer, { title: `Lead ${role}`, location: 'Eilat' });
+    const prefs = await seeker.api.patch('/api/users/me', { data: { desiredRole: role, preferredLocation: 'Haifa' } });
+    expect(prefs.ok(), `save preferences: ${prefs.status()}`).toBeTruthy();
+
+    await loginViaUi(page, seeker);
+    await page.goto('/feed');
+
+    // Scoped to the section: both jobs also appear under "Recently posted".
+    const matched = page.getByTestId('matched-jobs');
+    await expect(matched.getByRole('heading', { name: 'Matched to your profile' })).toBeVisible();
+    await expect(matched.getByText(`${role} · Haifa`)).toBeVisible();
+    await expect(matched.getByRole('link', { name: `${match.title} at ${match.companyName}` })).toBeVisible();
+    await expect(matched.getByRole('link', { name: `${otherCity.title} at ${otherCity.companyName}` })).toHaveCount(0);
+
+    await disposeUsers(referrer, seeker);
+  });
+
+  test('without preferences, Home invites the seeker to set them instead of guessing', async ({ page }) => {
+    const seeker = await createSeeker();
+    const referrer = await createReferrer();
+    const job = await createJob(referrer);
+    await applyViaApi(seeker, job.id); // past the brand-new-user welcome state
+
+    await loginViaUi(page, seeker);
+    await page.goto('/feed');
+
+    await expect(page.getByTestId('matched-jobs')).toHaveCount(0);
+    await expect(page.getByText('Get matched to relevant jobs')).toBeVisible();
 
     await disposeUsers(referrer, seeker);
   });
