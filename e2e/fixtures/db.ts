@@ -51,3 +51,20 @@ export async function closeDb(): Promise<void> {
     client = null;
   }
 }
+
+/** Waitlist rows for an address — the signup's whole effect is this row. */
+export async function waitlistRowsFor(email: string): Promise<{ role: string; source_cta: string | null; utm_source: string | null }[]> {
+  return db()<{ role: string; source_cta: string | null; utm_source: string | null }[]>`
+    SELECT role, source_cta, utm_source FROM waitlist_signups WHERE email = ${email.toLowerCase()} ORDER BY role
+  `;
+}
+
+/** Mark an account as linked to both Google and LinkedIn — the state the
+ *  Settings "Connect" flow produces, which needs real OAuth to reach. */
+export async function linkBothOAuthProviders(email: string): Promise<void> {
+  await db()`
+    UPDATE users
+       SET google_id = ${'g-' + email}, linkedin_id = ${'li-' + email}
+     WHERE email = ${email.toLowerCase()}
+  `;
+}

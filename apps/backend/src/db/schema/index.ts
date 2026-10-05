@@ -7,3 +7,4 @@ export { applicationMessages } from './applicationMessages';
 export { notifications } from './notifications';
 export { invites } from './invites';
 export { creditPurchases } from './creditPurchases';
+export { waitlistSignups } from './waitlistSignups';

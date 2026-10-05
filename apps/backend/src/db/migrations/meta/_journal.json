@@ -148,6 +148,13 @@
       "when": 1790169592521,
       "tag": "0020_special_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1790668351668,
+      "tag": "0021_waitlist_signups",
+      "breakpoints": true
     }
   ]
 }

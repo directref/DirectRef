@@ -46,7 +46,7 @@ export function CreditsCard() {
       {isLoading ? (
         <p className="text-[13px]" style={{ color: '#A89070' }}>Loading…</p>
       ) : (
-        <p className="text-[15px] font-bold" style={{ color: '#F0E8D8' }}>
+        <p data-testid="credit-balance" className="text-[15px] font-bold" style={{ color: '#F0E8D8' }}>
           {total} credit{total === 1 ? '' : 's'} available
         </p>
       )}

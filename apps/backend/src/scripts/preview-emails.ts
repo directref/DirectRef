@@ -28,8 +28,10 @@ import {
   sendSubmitReminderEmail,
   sendSubmitFollowupEmail,
   sendInternallySubmittedEmail,
+  sendCVRejectedEmail,
   sendReferrerExpiredEmail,
   sendNewMessageEmail,
+  sendWaitlistConfirmationEmail,
 } from '../services/email';
 
 const to = process.argv[2];
@@ -59,7 +61,10 @@ const templates: Array<[name: string, send: () => Promise<void>]> = [
   ['cv-downloaded',         () => sendCVDownloadedEmail(to, seeker, referrer, job, company, appsUrl)],
   // forward-to-HR flow removed from the product entirely (endpoint deleted too):
   // ['cv-forwarded-seeker',   () => sendCVForwardedEmail(to, seeker, referrer, job, company, appsUrl)],
+  ['waitlist-seeker',       () => sendWaitlistConfirmationEmail(to, 'seeker', '00000000-0000-0000-0000-000000000000')],
+  ['waitlist-referrer',     () => sendWaitlistConfirmationEmail(to, 'referrer', '00000000-0000-0000-0000-000000000000')],
   ['internally-submitted',  () => sendInternallySubmittedEmail(to, seeker, referrer, job, company, appsUrl)],
+  ['not-a-fit',             () => sendCVRejectedEmail(to, seeker, referrer, job, company, appsUrl)],
   ['reminder-day1',         () => sendReminderEmail(to, referrer, seeker, job, company, inboxUrl)],
   ['reminder-day2',         () => sendSecondReminderEmail(to, referrer, seeker, job, company, inboxUrl)],
   ['submit-reminder-day2',  () => sendSubmitReminderEmail(to, referrer, seeker, job, company, inboxUrl)],

@@ -23,9 +23,9 @@ async function newApiContext(): Promise<APIRequestContext> {
   return pwRequest.newContext({ baseURL: API_URL });
 }
 
-async function register(opts: { emailPrefix: string; fullName: string; isReferrer: boolean }): Promise<TestUser> {
+async function register(opts: { emailPrefix: string; fullName: string; isReferrer: boolean; emailDomain?: string }): Promise<TestUser> {
   const api = await newApiContext();
-  const email = `${unique(opts.emailPrefix)}@example.test`;
+  const email = `${unique(opts.emailPrefix)}@${opts.emailDomain ?? 'example.test'}`;
 
   const res = await api.post('/api/auth/register', {
     data: { email, password: TEST_PASSWORD, fullName: opts.fullName, isReferrer: opts.isReferrer },
@@ -72,8 +72,23 @@ export const createSeeker = () =>
  * inbox — and then follows the real verification endpoint. Everything but the
  * delivery is genuine.
  */
-export async function createReferrer(companyDomain = 'acme.test'): Promise<TestUser & { companyDomain: string }> {
-  const user = await register({ emailPrefix: 'referrer', fullName: awkwardName(), isReferrer: true });
+export async function createReferrer(
+  companyDomain = 'acme.test',
+  opts: { visibleInBrowse?: boolean; fullName?: string } = {},
+): Promise<TestUser & { companyDomain: string }> {
+  // A .test account's postings are hidden from search, the feed and the
+  // landing sample (config/testAccounts.ts) — by design, so a probe never
+  // reaches real seekers. Tests of Browse Jobs itself need postings a seeker
+  // can actually see, so they register on a non-.test domain instead. Safe
+  // locally: the throwaway backend has no Resend key, so no mail can leave.
+  const user = await register({
+    emailPrefix: 'referrer',
+    // Random awkward names repeat (6 to pick from), so a test that tells two
+    // referrers apart by name passes its own.
+    fullName: opts.fullName ?? awkwardName(),
+    isReferrer: true,
+    emailDomain: opts.visibleInBrowse ? 'example.com' : undefined,
+  });
 
   const workEmail = `${unique('rae')}@${companyDomain}`;
   const submit = await user.api.post('/api/users/me/work-email', { data: { workEmail } });
@@ -118,6 +133,24 @@ export async function loginViaUi(page: Page, user: TestUser): Promise<void> {
   await page.getByLabel('Password', { exact: true }).fill(user.password);
   await page.getByRole('button', { name: /log ?in|sign ?in/i }).click();
   await page.waitForURL(/\/feed|\/onboarding/, { timeout: 20_000 });
+}
+
+/** Apply through the API — for tests whose subject starts after the C.V. is sent. */
+export async function applyViaApi(
+  seeker: TestUser,
+  jobId: string,
+  opts: { cv?: typeof TEST_CV; coverNote?: string } = {},
+): Promise<{ id: string }> {
+  const cv = opts.cv ?? TEST_CV;
+  const res = await seeker.api.post('/api/applications', {
+    multipart: {
+      jobId,
+      cv: { name: cv.name, mimeType: cv.mimeType, buffer: cv.buffer },
+      ...(opts.coverNote ? { coverNote: opts.coverNote } : {}),
+    },
+  });
+  expect(res.ok(), `apply failed: ${res.status()} ${await res.text()}`).toBeTruthy();
+  return (await res.json()).data;
 }
 
 /** A small real PDF — multer checks the mimetype, and the referrer-side tests

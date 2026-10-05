@@ -46,6 +46,15 @@ export default defineConfig({
       // Empty on purpose: the email module is mocked in setup.ts, so no
       // outbound mail is possible even if a mock were missed.
       RESEND_API_KEY: '',
+
+      // Tests that go through HTTP (src/test/http.ts) upload and register far
+      // faster than a person, so the production limits (10 uploads / hour)
+      // trip within a file. Relaxed for the suite only, as the Playwright
+      // config does; env.ts's defaults, which production uses, are unchanged.
+      RATE_LIMIT_AUTH_MAX: '10000',
+      RATE_LIMIT_API_MAX: '100000',
+      RATE_LIMIT_UPLOAD_MAX: '10000',
+      RATE_LIMIT_SCRAPE_MAX: '10000',
     },
   },
 });

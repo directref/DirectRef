@@ -141,6 +141,7 @@ export function MessageThread({
         {/* Compose area */}
         <div className="border-t border-border px-6 py-4 flex gap-3 items-end shrink-0">
           <Textarea
+            data-testid="message-input"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -151,6 +152,7 @@ export function MessageThread({
             className="resize-none"
           />
           <Button
+            data-testid="send-message"
             variant="primary"
             size="sm"
             onClick={handleSend}

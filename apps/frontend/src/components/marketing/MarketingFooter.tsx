@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { mkt } from '@/app/(marketing)/tokens';
+import { WaitlistButton } from './Waitlist';
 
 function FooterLogo() {
   return (
@@ -26,8 +27,7 @@ export function MarketingFooter() {
         </div>
         <nav className="flex flex-wrap gap-5 text-[13.5px]">
           <Link href="/our-story" style={footerLinkStyle}>Our story</Link>
-          <Link href="/login" style={footerLinkStyle}>Sign in</Link>
-          <Link href="/register" style={footerLinkStyle}>Create an account</Link>
+          <WaitlistButton role={null} source="footer" style={footerLinkStyle}>Join the waitlist</WaitlistButton>
         </nav>
       </div>
       <div className="flex justify-center gap-5 flex-wrap pb-3.5">

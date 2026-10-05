@@ -189,3 +189,17 @@ export const CONNECTION_STATUS_LABELS: Record<string, string> = {
   accepted: 'Connected',
   rejected: 'Declined',
 };
+
+/** Plain language beats a bare hour count at the moment someone is choosing
+ *  who to trust with their C.V. Shared by the Send CV window and the job
+ *  page, so the two never describe the same referrer differently. */
+export function formatTypicalReply(medianHours: number): string {
+  if (medianHours < 1) return 'usually replies within the hour';
+  if (medianHours <= 24) return `usually replies within ${Math.max(1, Math.round(medianHours))}h`;
+  const days = Math.round(medianHours / 24);
+  return `usually replies within ${days} day${days === 1 ? '' : 's'}`;
+}
+
+export function responseToneClass(band: 'green' | 'orange' | 'red'): string {
+  return band === 'green' ? 'text-jobs-success' : 'text-jobs-ink-muted';
+}

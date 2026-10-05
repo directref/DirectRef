@@ -366,7 +366,7 @@ export default function FeedClient({ initialJobs }: { initialJobs: JobWithReferr
 
           {/* Needs your attention card — only shown if there's something to act on */}
           {hasAttention && (
-          <div style={{ background: '#fff', border: '1px solid oklch(0.93 0.004 70)', borderRadius: 16, overflow: 'hidden' }}>
+          <div data-testid="needs-attention" style={{ background: '#fff', border: '1px solid oklch(0.93 0.004 70)', borderRadius: 16, overflow: 'hidden' }}>
               <div style={{ borderTop: '1px solid oklch(0.93 0.004 70)', padding: 20 }}>
                 <p style={{ fontSize: 12.5, color: 'oklch(0.62 0.008 60)', margin: '0 0 16px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', display: 'flex', alignItems: 'center', gap: 6 }}>
                   Needs your attention
