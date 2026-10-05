@@ -17,6 +17,7 @@ vi.mock('../services/email', () => ({
   sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
   sendWorkEmailVerificationEmail: vi.fn().mockResolvedValue(undefined),
   sendWorkEmailVerifiedEmail: vi.fn().mockResolvedValue(undefined),
+  sendAccountDeletedEmail: vi.fn().mockResolvedValue(undefined),
   sendCVNotificationEmail: vi.fn().mockResolvedValue(undefined),
   sendCVViewedEmail: vi.fn().mockResolvedValue(undefined),
   sendCVForwardedEmail: vi.fn().mockResolvedValue(undefined),

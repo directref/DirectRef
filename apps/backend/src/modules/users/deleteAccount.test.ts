@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { db } from '../../config/db';
 import { users, jobs, applications, applicationMessages, notifications } from '../../db/schema';
 import { deleteAccount } from './users.service';
+import * as email from '../../services/email';
 import {
   makeSeeker, makeReferrer, makeJob, makeApplication, makeMessage,
   writeCvFile, cvFileExists,
@@ -130,6 +131,21 @@ describe('deleting a seeker', () => {
     await deleteAccount(seeker.id);
 
     expect(cvFileExists(profileCv), 'profile C.V. survived the deletion').toBe(false);
+  });
+});
+
+describe('confirmation email', () => {
+  // Regression: verifyWorkEmail() and deleteAccount() used to change the
+  // world and tell no one -- no email confirmed either had happened, and the
+  // deleted user in particular had no way to know it actually went through
+  // beyond the row disappearing (see also login-after-delete.spec.ts, e2e).
+  it('tells the account holder their account is gone', async () => {
+    const seeker = await makeSeeker();
+
+    await deleteAccount(seeker.id);
+
+    expect(email.sendAccountDeletedEmail).toHaveBeenCalledOnce();
+    expect(vi.mocked(email.sendAccountDeletedEmail).mock.calls[0]).toEqual([seeker.email, seeker.fullName]);
   });
 });
 

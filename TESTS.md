@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**366 scenarios**: 305 backend (vitest) + 61 end-to-end (Playwright).
+**368 scenarios**: 306 backend (vitest) + 62 end-to-end (Playwright).
 
 ## The three groups
 
@@ -32,7 +32,7 @@ Last nightly report: **https://directref.github.io/DirectRef/**
 
 ---
 
-## End-to-end (Playwright) — 61 scenarios
+## End-to-end (Playwright) — 62 scenarios
 
 Drives the real frontend against the real backend on a throwaway Postgres.
 
@@ -246,6 +246,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - an existing user can log in, stays logged in across a reload, and can log out
 - a wrong password is rejected and does not let anyone in
 - an anonymous visitor is sent to login when reaching for the app
+- deleting an account logs the user out cleanly, with no way back in
 
 ### response record in the Send CV window
 
@@ -375,7 +376,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 305 scenarios
+## Backend integration (vitest) — 306 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -602,6 +603,10 @@ against production.
 - requires being logged in
 
 ### `src/modules/users/deleteAccount.test.ts`
+
+**confirmation email**
+
+- tells the account holder their account is gone
 
 **deleting a referrer**
 

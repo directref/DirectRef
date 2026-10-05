@@ -305,6 +305,25 @@ export async function sendWorkEmailVerificationEmail(to: string, name: string, t
   });
 }
 
+/** Sent once deleteAccount() (users.service.ts) has already removed the row
+ *  -- confirms the deletion the user just asked for actually happened.
+ *  No CTA back into the app: there's nothing left to click into. */
+export async function sendAccountDeletedEmail(to: string, name: string): Promise<void> {
+  const firstName = name.trim().split(/\s+/)[0] || name;
+  const subject = 'Your DirectRef account has been deleted';
+  await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to,
+    subject,
+    html: layout(subject, 'Your profile, CV, applications and any roles you posted are gone for good.', [
+      eyebrow('Account'),
+      heading(`Your account has been deleted, ${esc(firstName)}`),
+      text(`Your profile, your CV, your applications and any roles you posted have been permanently deleted. This can't be undone.`),
+      text(`If you didn't do this, contact us immediately at ${strong('support@direct-ref.com')}.`),
+    ].join('\n')),
+  });
+}
+
 /** Sent once verifyWorkEmail() (auth.service.ts) completes -- the referrer
  *  clicked the link from sendWorkEmailVerificationEmail above and is now
  *  unblocked to post jobs for that company. */
