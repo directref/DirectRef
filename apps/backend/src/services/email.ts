@@ -203,26 +203,25 @@ function waitlistFooter(unsubscribeUrl: string) {
       </p>`;
 }
 
-// PLACEHOLDER COPY (2026-09-29) — Shai and Anat are writing the final wording.
-// Replace the strings below; the structure (one email per role, unsubscribe
-// link in the footer) is what the waitlist spec requires.
+// Final copy, approved by Shai 2026-10-05 (email copy of record, templates
+// 18–19). The preheader reuses a sentence from each body.
 const WAITLIST_COPY = {
   seeker: {
     subject: "You're on the DirectRef waitlist",
-    preheader: "We'll email you the moment positions are live.",
-    heading: "You're on the list",
+    preheader: "We'll email you the moment positions go live.",
+    heading: "You're on the list!",
     body: [
-      "We're lining up roles with insiders who can refer you: real employees who'll put your CV in front of the people who decide.",
-      "We'll email you the moment positions are live. Until then, there's nothing you need to do.",
+      "We're gathering positions from insiders who can refer you directly to hiring teams.",
+      "We'll email you the moment positions go live. Until then, there's nothing you need to do.",
     ],
   },
   referrer: {
     subject: "You're on the DirectRef waitlist",
-    preheader: "We'll let you know when you can post the roles you can refer into.",
-    heading: "You're on the list",
+    preheader: "We'll email you as soon as position posting opens.",
+    heading: "You're on the list!",
     body: [
-      "We're getting ready to open DirectRef. You'll be among the first to post the roles you can refer into, and to hear from people worth referring.",
-      "We'll email you as soon as posting opens. Until then, there's nothing you need to do.",
+      "We're getting ready to open DirectRef. You'll be among the first to post your company's open positions before candidates start applying.",
+      "We'll email you as soon as position posting opens. Until then, there's nothing you need to do.",
     ],
   },
 } as const;
