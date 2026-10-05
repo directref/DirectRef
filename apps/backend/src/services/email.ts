@@ -626,6 +626,33 @@ export async function sendInternallySubmittedEmail(
   });
 }
 
+/** The referrer answered "Not a fit". Added 2026-10-04: every other answer
+ *  already emailed the seeker, and a decline is still an answer — the
+ *  product's promise is that the seeker hears back, whatever the outcome. */
+export async function sendCVRejectedEmail(
+  seekerEmail: string,
+  seekerName: string,
+  referrerName: string,
+  jobTitle: string,
+  companyName: string,
+  applicationsUrl: string,
+): Promise<void> {
+  await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to: seekerEmail,
+    subject: `${jobTitle} at ${companyName} — not a fit this time`,
+    html: layout(`${jobTitle} at ${companyName} — not a fit this time`, `${referrerName} reviewed your CV and answered.`, [
+      eyebrow('Application update'),
+      badge('Not a fit', 'neutral'),
+      heading('Not a fit this time'),
+      text(`${strong(referrerName)} reviewed your CV for ${strong(jobTitle)} at ${strong(companyName)} and decided not to refer it for this role. Your CV was not passed on to the company.`),
+      text(`You can still message ${esc(referrerName)} from your application, for example to ask what would have made it a fit.`),
+      button(`${env.FRONTEND_URL}/jobs`, 'Find another role'),
+      link(applicationsUrl, 'See all my applications'),
+    ].join('\n')),
+  });
+}
+
 // ── Messaging ───────────────────────────────────────────────────────────────
 
 export async function sendNewMessageEmail(

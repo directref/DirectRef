@@ -24,13 +24,19 @@ export function useMyApplications(initialData?: ApplicationWithDetails[]) {
 /**
  * Returns a Map of jobId → status for every job the user applied to.
  * Used by JobCard for the status icon + tooltip.
+ *
+ * Withdrawn applications are left out: withdrawing is only possible before
+ * the referrer opens the C.V., and the seeker may then apply again — so the
+ * job must not read as "CV sent" (product decision 2026-10-04).
  */
 export function useMyApplicationsMap() {
   const { data, mutate } = useSWR(
     'applications/mine/map',
     () => applicationsApi.mine().then((r) => {
       const map = new Map<string, string>();
-      (r.data ?? []).forEach((a) => map.set(a.job.id, a.application.status));
+      (r.data ?? []).forEach((a) => {
+        if (a.application.status !== 'withdrawn') map.set(a.job.id, a.application.status);
+      });
       return map;
     }),
     { revalidateOnFocus: true },
