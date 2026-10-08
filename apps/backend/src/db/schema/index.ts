@@ -8,3 +8,4 @@ export { notifications } from './notifications';
 export { invites } from './invites';
 export { creditPurchases } from './creditPurchases';
 export { waitlistSignups } from './waitlistSignups';
+export { marketingEvents } from './marketingEvents';

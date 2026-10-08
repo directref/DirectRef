@@ -98,7 +98,7 @@ export default function PrivacyPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <MarketingHeader variant="sub" />
 
-      <LegalLayout title="Privacy Policy" effectiveDate="Effective 11 September 2026 · Last updated 29 September 2026" toc={toc}>
+      <LegalLayout title="Privacy Policy" effectiveDate="Effective 11 September 2026 · Last updated 8 October 2026" toc={toc}>
         <LegalH2 id="s1">1. Who we are</LegalH2>
         <LegalP>DirectRef (&quot;DirectRef&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;) is a cross-company referral marketplace operated by <LegalStrong>Shai Atar and Anat Atar Lachmish</LegalStrong>, jointly, as private individuals in Israel. DirectRef is not currently incorporated.</LegalP>
         <LegalP>We are the controller of the personal data described in this policy, meaning we decide why and how it is processed.</LegalP>
@@ -151,7 +151,8 @@ export default function PrivacyPage() {
           <LegalLi>Access and security logs: sign-in attempts, timestamps, and requests to our API.</LegalLi>
           <LegalLi>A strictly necessary cookie holding your sign-in session. See §9.</LegalLi>
         </LegalUl>
-        <LegalP>We do not currently run any product analytics, session replay, or third-party crash reporting. If we add any, we will update this policy under §15 first.</LegalP>
+        <LegalP><LegalStrong>Anonymous visit and click counts.</LegalStrong> On our public marketing pages we count page visits and clicks on the sign-up buttons, together with the campaign tags in the link you arrived from (such as utm_source), so we can see which pages and campaigns work. These counts are stored without your IP address, without any cookie or identifier, and without anything else that could identify you.</LegalP>
+        <LegalP>We do not run any other product analytics, session replay, or third-party crash reporting. If we add any, we will update this policy under §15 first.</LegalP>
 
         <LegalH3>3.4 What we do not collect</LegalH3>
         <LegalP>We do not ask for and do not want: your national ID number, bank details, payment card numbers, health information, biometric data, political or religious affiliation, or trade union membership. <LegalStrong>DirectRef takes no payments at all, so no payment data is collected anywhere on the Service.</LegalStrong></LegalP>

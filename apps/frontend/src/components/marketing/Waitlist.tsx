@@ -14,7 +14,8 @@
  *   marketing page, so any button on any of them can open the modal).
  * - CALLED BY: WaitlistButton — the hero, audience cards, closing section,
  *   header and footer.
- * - CALLS: POST /api/waitlist (backend modules/waitlist).
+ * - CALLS: POST /api/waitlist (backend modules/waitlist), and POST /api/events
+ *   for each marketing page view and CTA click (the Conversion dashboard).
  *
  * DESIGN DECISIONS:
  * - WHY the button decides the role: a seeker CTA and a referrer CTA already
@@ -27,10 +28,12 @@
  */
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { mkt } from '@/app/(marketing)/tokens';
 import { api, ApiError } from '@/lib/api/client';
+import { API_BASE } from '@/lib/constants';
 
 export type WaitlistRole = 'seeker' | 'referrer';
 
@@ -91,6 +94,29 @@ function readUtm(): Record<string, string> {
   }
 }
 
+/** Anonymous page view / CTA click for the Conversion dashboard. Fire and
+ *  forget: keepalive lets it finish even if the click navigates away, and a
+ *  failure must never get in the way of the page. No cookies are sent. */
+function trackEvent(event: { type: 'page_view' | 'cta_click'; cta?: string; role?: WaitlistRole | null }) {
+  try {
+    const utm = readUtm();
+    void fetch(`${API_BASE}/api/events`, {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: event.type,
+        cta: event.cta?.slice(0, 64),
+        role: event.role ?? undefined,
+        path: window.location.pathname.slice(0, 256),
+        utmSource: utm.utm_source,
+        utmMedium: utm.utm_medium,
+        utmCampaign: utm.utm_campaign,
+      }),
+    }).catch(() => {});
+  } catch { /* tracking is best-effort */ }
+}
+
 type Status = 'idle' | 'submitting' | 'done';
 
 export function WaitlistProvider({ children }: { children: React.ReactNode }) {
@@ -105,7 +131,12 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
   // the campaign URL.
   useEffect(() => { readUtm(); }, []);
 
+  // One page view per marketing page the visitor lands on or moves to.
+  const pathname = usePathname();
+  useEffect(() => { trackEvent({ type: 'page_view' }); }, [pathname]);
+
   const openWaitlist = useCallback((next: OpenOptions) => {
+    trackEvent({ type: 'cta_click', cta: next.source, role: next.role });
     setOpts(next);
     setStatus('idle');
     setError(null);

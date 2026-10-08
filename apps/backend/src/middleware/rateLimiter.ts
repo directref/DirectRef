@@ -47,3 +47,14 @@ export const waitlistLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please try again later.' } },
 });
+
+/** Marketing page views / CTA clicks. Generous enough for a person clicking
+ *  around the landing page, low enough that one script cannot flood the
+ *  Conversion dashboard's counts. */
+export const eventsLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: env.RATE_LIMIT_EVENTS_MAX,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: { code: 'RATE_LIMITED', message: 'Too many events.' } },
+});
