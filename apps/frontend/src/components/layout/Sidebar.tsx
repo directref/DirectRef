@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { Home, Search, Send, Bookmark, PlusSquare, Inbox, Bell, LogOut } from 'lucide-react';
+import { Home, Search, Send, Bookmark, PlusSquare, Inbox, Bell, LogOut, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useUnreadCount } from '@/lib/hooks/useNotifications';
@@ -35,6 +35,10 @@ const REFERRER_ITEMS: Item[] = [
 const GENERAL_ITEMS: Item[] = [
   { href: '/notifications', icon: Bell, label: 'Notifications' },
 ];
+
+// Only shown to admins (user.isAdmin, from the backend's ADMIN_EMAILS check).
+// Hiding it is a courtesy, not the protection — /api/admin refuses everyone else.
+const ADMIN_ITEM: Item = { href: '/admin/waitlist', icon: ShieldCheck, label: 'Admin Panel' };
 
 const EXACT_ROUTES = ['/applications', '/jobs'];
 
@@ -152,6 +156,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               onNavigate={onNavigate}
             />
           ))}
+          {user?.isAdmin && (
+            <NavLink item={ADMIN_ITEM} active={pathname.startsWith('/admin')} onNavigate={onNavigate} />
+          )}
         </div>
       </nav>
 

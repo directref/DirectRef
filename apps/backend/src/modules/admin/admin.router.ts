@@ -5,28 +5,17 @@ import * as adminService from './admin.service';
 import { getWaitlistDashboard } from '../waitlist/waitlist.service';
 import { requireAuth } from '../../middleware/auth';
 import { AppError } from '../../middleware/errorHandler';
-import { env } from '../../config/env';
+import { isAdmin } from './admin.access';
 
 const router = Router();
 
-/** Admin = a logged-in DirectRef account whose email is in ADMIN_EMAILS.
+/** Admin = a logged-in DirectRef account that isAdmin() accepts (a verified
+ *  email on ADMIN_EMAILS — see admin.access.ts).
  *
  *  Replaces the old shared ADMIN_SECRET: these routes return real people's
  *  email addresses, and a shared password leaks with a screenshot and can
  *  only be revoked by rotating it for everyone. An account is revoked by
- *  removing it from the list.
- *
- *  The email must be VERIFIED: otherwise anyone could register an unclaimed
- *  admin address with a password and be let in before verifying it. Account
- *  emails cannot be changed after signup, so a verified match stays valid. */
-const adminEmails = new Set(
-  env.ADMIN_EMAILS.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean),
-);
-
-export function isAdmin(user: { email: string; emailVerified: boolean } | undefined): boolean {
-  return !!user && user.emailVerified && adminEmails.has(user.email.toLowerCase());
-}
-
+ *  removing it from the list. */
 function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   requireAuth(req, res, (err?: unknown) => {
     if (err) return next(err);

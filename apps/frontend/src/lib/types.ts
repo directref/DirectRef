@@ -45,6 +45,8 @@ export interface User {
   cvOriginalName: string | null;
   cvMimetype: string | null;
   cvSizeBytes: number | null;
+  /** Shows the Admin Panel link. Display only — the backend checks access. */
+  isAdmin?: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -13,10 +13,14 @@ import { isTestAccountEmail } from '../../config/testAccounts';
 import { grantSignupCredits } from '../credits/credits.service';
 import type { RegisterDto } from './auth.schemas';
 import type { InferSelectModel } from 'drizzle-orm';
+import { isAdmin } from '../admin/admin.access';
 
 export type User = InferSelectModel<typeof users>;
 
-/** Strip sensitive fields before returning user to client */
+/** Strip sensitive fields before returning user to client.
+ *  Only ever called on the caller's OWN account (login, register, /me,
+ *  profile), so it also says whether they are an admin — the sidebar uses it
+ *  to show the Admin Panel link. */
 export function sanitizeUser(user: User | Express.User) {
   const {
     passwordHash: _, emailVerifyToken: __, resetToken: ___, resetTokenExp: ____,
@@ -24,7 +28,7 @@ export function sanitizeUser(user: User | Express.User) {
     cvFilename: _______, // internal disk filename, never exposed — same convention as applications.cvFilename
     ...safe
   } = user as User;
-  return safe;
+  return { ...safe, isAdmin: isAdmin(user as User) };
 }
 
 export async function register(dto: RegisterDto): Promise<User> {

@@ -104,3 +104,18 @@ describe('GET /api/admin/waitlist', () => {
     expect((await getAs(admin, '?days=0')).status).toBe(422);
   });
 });
+
+describe('isAdmin on the caller\'s own account — drives the sidebar link', () => {
+  it('is true only for a verified admin account', async () => {
+    const admin = await makeAdmin();
+    const stranger = await makeUser({ email: 'someone@example.com', emailVerified: true });
+    const squatter = await makeUser({ email: 'anatatar83@gmail.com', emailVerified: false });
+
+    for (const path of ['/api/auth/me', '/api/users/me']) {
+      const flag = async (id: string) => ((await (await as(base, id).get(path)).json()) as { data: { isAdmin: boolean } }).data.isAdmin;
+      expect(await flag(admin.id)).toBe(true);
+      expect(await flag(stranger.id)).toBe(false);
+      expect(await flag(squatter.id)).toBe(false);
+    }
+  });
+});
