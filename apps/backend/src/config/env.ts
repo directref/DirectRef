@@ -47,7 +47,9 @@ const envSchema = z.object({
   RATE_LIMIT_SCRAPE_MAX: z.coerce.number().default(30),
   RATE_LIMIT_WAITLIST_MAX: z.coerce.number().default(10),
 
-  ADMIN_SECRET: z.string().default('directref_admin_2024_secret_key'),
+  // Accounts allowed into /admin (comma-separated, matched against a verified
+  // account email). See modules/admin/admin.router.ts.
+  ADMIN_EMAILS: z.string().default('shaiatar@gmail.com,anatatar83@gmail.com'),
   UPLOADS_DIR: z.string().default('./uploads'),
   MAX_CV_SIZE_MB: z.coerce.number().default(10),
 

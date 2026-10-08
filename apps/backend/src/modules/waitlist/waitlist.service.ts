@@ -134,3 +134,87 @@ export async function getWaitlistStats() {
     notSyncedToResend: notSynced.count,
   };
 }
+
+export type WaitlistDashboardOptions = { days: number; tz: string };
+
+// ─────────────────────────────────────────────────
+// WHY: the first thing to watch after the launch posts went out — is anyone
+//      joining, from which group, and through which button.
+// WHAT: headline counts (getWaitlistStats), a gap-free daily series per list,
+//       breakdowns by CTA and by UTM, and the latest signups.
+// CONNECTION: GET /api/admin/waitlist → frontend /admin/waitlist.
+//
+// - WHY the daily series counts every signup, unsubscribed or not: it answers
+//   "how many joined that day", and an unsubscribe a week later should not
+//   rewrite the history of the day a post went out. The headline totals are
+//   the ones that exclude unsubscribes.
+// - WHY days are cut in the viewer's time zone: a post that went out at 23:30
+//   Israel time is "today" to the person reading the chart, not UTC tomorrow.
+//   tz is validated by the router; it is passed as a bound parameter anyway.
+// ─────────────────────────────────────────────────
+export async function getWaitlistDashboard({ days, tz }: WaitlistDashboardOptions) {
+  const localDay = sql`(${waitlistSignups.createdAt} AT TIME ZONE ${tz})::date`;
+  const since = sql`(now() AT TIME ZONE ${tz})::date - ${days - 1}::int`;
+
+  const daily = await db.execute<{ date: string; seekers: number; referrers: number }>(sql`
+    WITH d AS (
+      SELECT generate_series(${since}, (now() AT TIME ZONE ${tz})::date, interval '1 day')::date AS day
+    )
+    SELECT to_char(d.day, 'YYYY-MM-DD') AS date,
+           (count(w.id) FILTER (WHERE w.role = 'seeker'))::int   AS seekers,
+           (count(w.id) FILTER (WHERE w.role = 'referrer'))::int AS referrers
+    FROM d
+    LEFT JOIN ${waitlistSignups} w ON (w.created_at AT TIME ZONE ${tz})::date = d.day
+    GROUP BY d.day
+    ORDER BY d.day
+  `);
+
+  const seekers = sql<number>`(count(*) FILTER (WHERE ${waitlistSignups.role} = 'seeker'))::int`;
+  const referrers = sql<number>`(count(*) FILTER (WHERE ${waitlistSignups.role} = 'referrer'))::int`;
+  const inRange = sql`${localDay} >= ${since}`;
+
+  const bySource = await db
+    .select({ source: waitlistSignups.sourceCta, seekers, referrers, total: count() })
+    .from(waitlistSignups)
+    .where(inRange)
+    .groupBy(waitlistSignups.sourceCta)
+    .orderBy(sql`count(*) DESC`);
+
+  const byCampaign = await db
+    .select({
+      utmSource: waitlistSignups.utmSource,
+      utmMedium: waitlistSignups.utmMedium,
+      utmCampaign: waitlistSignups.utmCampaign,
+      seekers,
+      referrers,
+      total: count(),
+    })
+    .from(waitlistSignups)
+    .where(inRange)
+    .groupBy(waitlistSignups.utmSource, waitlistSignups.utmMedium, waitlistSignups.utmCampaign)
+    .orderBy(sql`count(*) DESC`)
+    .limit(25);
+
+  const recent = await db
+    .select({
+      email: waitlistSignups.email,
+      role: waitlistSignups.role,
+      source: waitlistSignups.sourceCta,
+      utmSource: waitlistSignups.utmSource,
+      utmCampaign: waitlistSignups.utmCampaign,
+      unsubscribed: sql<boolean>`${waitlistSignups.unsubscribedAt} IS NOT NULL`,
+      createdAt: waitlistSignups.createdAt,
+    })
+    .from(waitlistSignups)
+    .orderBy(sql`${waitlistSignups.createdAt} DESC`)
+    .limit(50);
+
+  return {
+    range: { days, tz },
+    totals: await getWaitlistStats(),
+    daily: [...daily],
+    bySource,
+    byCampaign,
+    recent,
+  };
+}
