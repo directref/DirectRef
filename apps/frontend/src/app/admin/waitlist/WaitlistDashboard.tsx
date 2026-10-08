@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { adminFetch, AdminFetchError, useAdminSecret } from '../useAdminSecret';
-import { SecretGate } from '../SecretGate';
+import Link from 'next/link';
+import { api, ApiError } from '@/lib/api/client';
+import { ROUTES } from '@/lib/constants';
 import { DailyChart, SERIES } from './DailyChart';
 import type { WaitlistDashboardData } from './types';
 
@@ -13,20 +14,34 @@ const REFRESH_MS = 60_000;
 /** First launch dashboard: is anyone joining, onto which list, and through
  *  which button / campaign. Refreshes every minute while open. */
 export function WaitlistDashboard() {
-  const { secret, setSecret, ready } = useAdminSecret();
   const [days, setDays] = useState<(typeof RANGES)[number]>(30);
   const [showTable, setShowTable] = useState(false);
   const tz = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC', []);
 
-  const { data, error, isLoading, mutate } = useSWR<WaitlistDashboardData, AdminFetchError>(
-    secret ? [`/api/admin/waitlist?days=${days}&tz=${encodeURIComponent(tz)}`, secret] : null,
-    ([path, s]: [string, string]) => adminFetch<WaitlistDashboardData>(path, s),
+  const { data, error, isLoading, mutate } = useSWR<WaitlistDashboardData, ApiError>(
+    `/api/admin/waitlist?days=${days}&tz=${encodeURIComponent(tz)}`,
+    async (path: string) => (await api.get<{ data: WaitlistDashboardData }>(path)).data,
     { refreshInterval: REFRESH_MS, keepPreviousData: true, shouldRetryOnError: false },
   );
 
-  if (!ready) return null;
-  if (!secret || error?.code === 'BAD_SECRET') {
-    return <SecretGate onSubmit={setSecret} error={secret ? error?.message : undefined} />;
+  // Access is decided by the backend (a verified account on ADMIN_EMAILS);
+  // the page only explains a refusal.
+  if (error?.status === 401 || error?.status === 403) {
+    return (
+      <div className="mx-auto mt-16 max-w-sm rounded-xl border border-border bg-card p-6 text-center">
+        <h1 className="mb-1 text-lg font-bold">{error.status === 401 ? 'Please log in' : 'Admins only'}</h1>
+        <p className="mb-4 text-sm text-text-muted">
+          {error.status === 401
+            ? 'Your session has expired.'
+            : 'This account does not have access to the admin dashboards.'}
+        </p>
+        {error.status === 401 ? (
+          <Link href={`${ROUTES.login}?next=/admin/waitlist`} className="text-sm font-semibold underline">Log in</Link>
+        ) : (
+          <p className="text-sm text-text-muted">Log out and sign in with an admin account.</p>
+        )}
+      </div>
+    );
   }
 
   const today = data?.daily.at(-1);
@@ -54,7 +69,6 @@ export function WaitlistDashboard() {
             ))}
           </div>
           <button onClick={() => mutate()} className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-semibold">Refresh</button>
-          <button onClick={() => setSecret(null)} className="px-2 py-1.5 text-sm text-text-muted hover:text-text-primary">Lock</button>
         </div>
       </div>
 

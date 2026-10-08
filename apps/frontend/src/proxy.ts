@@ -30,6 +30,9 @@ const PROTECTED_PREFIXES = [
   '/notifications',
   '/settings',
   '/onboarding',
+  // Internal dashboards. Login only gets you to the page; the backend then
+  // checks the account is on ADMIN_EMAILS before returning any data.
+  '/admin',
 ];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {

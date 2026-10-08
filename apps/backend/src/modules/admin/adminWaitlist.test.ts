@@ -1,9 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { db } from '../../config/db';
 import { waitlistSignups } from '../../db/schema';
-import { env } from '../../config/env';
-import { useServer } from '../../test/http';
-import { daysAgo } from '../../test/factories';
+import { useServer, as } from '../../test/http';
+import { daysAgo, makeUser } from '../../test/factories';
 
 /**
  * WHY THIS FILE:
@@ -11,9 +10,9 @@ import { daysAgo } from '../../test/factories';
  *    whether anyone is joining, from which group, and through which button.
  *  - COST OF FAILURE: a quiet day that reads as zero because of a missing
  *    date, a campaign credited to the wrong list, or an email list readable
- *    without the secret.
+ *    without logging in as one of the ADMIN_EMAILS accounts.
  *  - SUCCESS: every day in range appears once, per-list counts add up, and
- *    nothing comes back without the admin secret.
+ *    nothing comes back unless the caller is a verified admin account.
  */
 
 vi.mock('../../services/waitlistSegments', () => ({
@@ -22,8 +21,10 @@ vi.mock('../../services/waitlistSegments', () => ({
 }));
 
 const { base } = useServer();
-const get = (query = '', secret: string | null = env.ADMIN_SECRET) =>
-  fetch(`${base()}/api/admin/waitlist${query}`, { headers: secret ? { 'x-admin-secret': secret } : {} });
+const ADMIN = 'shaiatar@gmail.com'; // in the ADMIN_EMAILS default
+const makeAdmin = () => makeUser({ email: ADMIN, emailVerified: true });
+const getAs = (userId: string | null, query = '') => as(base, userId).get(`/api/admin/waitlist${query}`);
+const get = async (query = '') => getAs((await makeAdmin()).id, query);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const dashboard = async (query = ''): Promise<any> => ((await (await get(query)).json()) as { data: unknown }).data;
 
@@ -38,9 +39,27 @@ async function seed() {
 }
 
 describe('GET /api/admin/waitlist', () => {
-  it('refuses without the admin secret, or with the wrong one', async () => {
-    expect((await get('', null)).status).toBe(401);
-    expect((await get('', 'wrong')).status).toBe(401);
+  it('refuses anyone not logged in as a verified admin account', async () => {
+    expect((await getAs(null)).status).toBe(401);
+
+    const stranger = await makeUser({ email: 'someone@example.com', emailVerified: true });
+    expect((await getAs(stranger.id)).status).toBe(403);
+
+    // Registered an admin address but never proved they own it.
+    const squatter = await makeUser({ email: 'anatatar83@gmail.com', emailVerified: false });
+    expect((await getAs(squatter.id)).status).toBe(403);
+  });
+
+  it('lets in each listed admin, matching the email case-insensitively', async () => {
+    const anat = await makeUser({ email: 'Anatatar83@Gmail.com', emailVerified: true });
+    expect((await getAs(anat.id)).status).toBe(200);
+    expect((await get()).status).toBe(200);
+  });
+
+  it('guards the older admin endpoints the same way', async () => {
+    const stranger = await makeUser({ email: 'someone@example.com', emailVerified: true });
+    expect((await as(base, stranger.id).get('/api/admin/stats')).status).toBe(403);
+    expect((await as(base, (await makeAdmin()).id).get('/api/admin/stats')).status).toBe(200);
   });
 
   it('returns one entry per day in range, zero-filled, ending today', async () => {
@@ -79,8 +98,9 @@ describe('GET /api/admin/waitlist', () => {
   });
 
   it('cuts days in the requested time zone, and rejects an unknown one', async () => {
-    expect((await get('?tz=Asia/Jerusalem')).status).toBe(200);
-    expect((await get('?tz=Not/AZone')).status).toBe(422);
-    expect((await get('?days=0')).status).toBe(422);
+    const admin = (await makeAdmin()).id;
+    expect((await getAs(admin, '?tz=Asia/Jerusalem')).status).toBe(200);
+    expect((await getAs(admin, '?tz=Not/AZone')).status).toBe(422);
+    expect((await getAs(admin, '?days=0')).status).toBe(422);
   });
 });
