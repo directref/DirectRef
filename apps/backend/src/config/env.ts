@@ -46,6 +46,7 @@ const envSchema = z.object({
   RATE_LIMIT_UPLOAD_MAX: z.coerce.number().default(10),
   RATE_LIMIT_SCRAPE_MAX: z.coerce.number().default(30),
   RATE_LIMIT_WAITLIST_MAX: z.coerce.number().default(10),
+  RATE_LIMIT_EVENTS_MAX: z.coerce.number().default(200),
 
   // Accounts allowed into /admin (comma-separated, matched against a verified
   // account email). See modules/admin/admin.router.ts.

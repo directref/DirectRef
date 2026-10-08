@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**433 scenarios**: 364 backend (vitest) + 69 end-to-end (Playwright).
+**441 scenarios**: 372 backend (vitest) + 69 end-to-end (Playwright).
 
 ## The three groups
 
@@ -431,7 +431,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 364 scenarios
+## Backend integration (vitest) — 372 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -456,6 +456,22 @@ against production.
 **isAdmin on the caller's own account — drives the sidebar link**
 
 - is true only for a verified admin account
+
+### `src/modules/admin/conversion.test.ts`
+
+**GET /api/admin/conversion**
+
+- is admins only
+- counts views, clicks, signups, job posts and CVs per day — leaving test accounts out
+- matches each CTA's clicks to the signups it brought
+- follows the CVs sent in range through to their outcome
+- validates the range and time zone
+
+**POST /api/events — anonymous marketing events**
+
+- records a CTA click with its button, list and campaign
+- drops a CTA name sent with a page view
+- rejects unknown event types, roles and oversized fields
 
 ### `src/modules/applications/applying.test.ts`
 

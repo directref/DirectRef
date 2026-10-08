@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-/** One tab per dashboard. Tests and Conversion are planned next and shown
- *  disabled so the shape of the admin area is visible from day one. */
+/** One tab per dashboard. Tests is planned next and shown disabled so the
+ *  shape of the admin area is visible. */
 const TABS = [
   { href: '/admin/waitlist', label: 'Waitlist' },
+  { href: '/admin/conversion', label: 'Conversion' },
   { href: null, label: 'Tests', note: 'soon' },
-  { href: null, label: 'Conversion', note: 'soon' },
 ] as const;
 
 export function AdminNav() {

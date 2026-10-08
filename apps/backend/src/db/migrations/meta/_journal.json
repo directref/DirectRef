@@ -155,6 +155,13 @@
       "when": 1790668351668,
       "tag": "0021_waitlist_signups",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791484725017,
+      "tag": "0022_marketing_events",
+      "breakpoints": true
     }
   ]
 }
