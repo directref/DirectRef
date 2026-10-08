@@ -16,7 +16,8 @@ export function AdminNav() {
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-6xl items-center gap-6 overflow-x-auto px-4 sm:px-6">
-        <span className="py-3 text-sm font-bold whitespace-nowrap">DirectRef admin</span>
+        <Link href="/feed" className="py-3 text-sm whitespace-nowrap text-text-muted hover:text-text-primary">← Back to app</Link>
+        <span className="py-3 text-sm font-bold whitespace-nowrap">Admin Panel</span>
         <nav className="flex gap-1">
           {TABS.map((t) =>
             t.href ? (

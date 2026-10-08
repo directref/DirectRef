@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**432 scenarios**: 363 backend (vitest) + 69 end-to-end (Playwright).
+**433 scenarios**: 364 backend (vitest) + 69 end-to-end (Playwright).
 
 ## The three groups
 
@@ -431,7 +431,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 363 scenarios
+## Backend integration (vitest) — 364 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -452,6 +452,10 @@ against production.
 - breaks the range down by CTA and by campaign
 - lists the latest signups first
 - cuts days in the requested time zone, and rejects an unknown one
+
+**isAdmin on the caller's own account — drives the sidebar link**
+
+- is true only for a verified admin account
 
 ### `src/modules/applications/applying.test.ts`
 
