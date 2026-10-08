@@ -1,5 +1,7 @@
 /** Building blocks shared by the admin dashboards. */
 
+import type { ReactNode } from 'react';
+
 export function Tile({ label, value, hint, swatch, strong }: { label: string; value: number | string; hint?: string; swatch?: string; strong?: boolean }) {
   return (
     <div className="min-w-0 rounded-xl border border-border bg-card p-4">
@@ -13,13 +15,13 @@ export function Tile({ label, value, hint, swatch, strong }: { label: string; va
   );
 }
 
-export function Table({ head, rows }: { head: string[]; rows: (string | number)[][] }) {
+export function Table({ head, rows }: { head: string[]; rows: (string | number | ReactNode)[][] }) {
   if (rows.length === 0) return <p className="text-sm text-text-muted">Nothing yet.</p>;
   return (
     <div className="max-h-96 overflow-auto">
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-card">
-          <tr>{head.map((h, i) => <th key={h} className={`border-b border-border py-1.5 pr-3 text-xs font-semibold text-text-muted ${i === 0 || typeof rows[0][i] === 'string' ? 'text-left' : 'text-right'}`}>{h}</th>)}</tr>
+          <tr>{head.map((h, i) => <th key={h} className={`border-b border-border py-1.5 pr-3 text-xs font-semibold text-text-muted ${typeof rows[0][i] === 'number' ? 'text-right' : 'text-left'}`}>{h}</th>)}</tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (

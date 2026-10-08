@@ -33,3 +33,7 @@ allure-results/
 *.log
 *.pem
 .vercel
+
+# Test result summaries CI uploads to the Tests dashboard (scripts/report-test-results.mjs)
+e2e/results.json
+apps/backend/vitest-results.json

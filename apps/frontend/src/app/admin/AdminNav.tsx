@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-/** One tab per dashboard. Tests is planned next and shown disabled so the
- *  shape of the admin area is visible. */
+/** One tab per dashboard. */
 const TABS = [
   { href: '/admin/waitlist', label: 'Waitlist' },
   { href: '/admin/conversion', label: 'Conversion' },
-  { href: null, label: 'Tests', note: 'soon' },
+  { href: '/admin/tests', label: 'Tests' },
 ] as const;
 
 export function AdminNav() {
@@ -19,23 +18,17 @@ export function AdminNav() {
         <Link href="/feed" className="py-3 text-sm whitespace-nowrap text-text-muted hover:text-text-primary">← Back to app</Link>
         <span className="py-3 text-sm font-bold whitespace-nowrap">Admin Panel</span>
         <nav className="flex gap-1">
-          {TABS.map((t) =>
-            t.href ? (
-              <Link
-                key={t.label}
-                href={t.href}
-                className={`border-b-2 px-3 py-3 text-sm font-semibold whitespace-nowrap ${
-                  pathname === t.href ? 'border-text-primary' : 'border-transparent text-text-muted hover:text-text-primary'
-                }`}
-              >
-                {t.label}
-              </Link>
-            ) : (
-              <span key={t.label} className="border-b-2 border-transparent px-3 py-3 text-sm whitespace-nowrap text-text-muted">
-                {t.label} <span className="text-[11px]">({t.note})</span>
-              </span>
-            ),
-          )}
+          {TABS.map((t) => (
+            <Link
+              key={t.label}
+              href={t.href}
+              className={`border-b-2 px-3 py-3 text-sm font-semibold whitespace-nowrap ${
+                pathname === t.href ? 'border-text-primary' : 'border-transparent text-text-muted hover:text-text-primary'
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>

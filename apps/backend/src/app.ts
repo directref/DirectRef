@@ -25,6 +25,7 @@ import adminRouter from './modules/admin/admin.router';
 import creditsRouter from './modules/credits/credits.router';
 import waitlistRouter from './modules/waitlist/waitlist.router';
 import eventsRouter from './modules/events/events.router';
+import testRunsRouter from './modules/testRuns/testRuns.router';
 
 // Ensure uploads directory exists
 const uploadDir = path.resolve(env.UPLOADS_DIR, 'cvs');
@@ -115,6 +116,7 @@ app.use('/api/admin',  adminRouter);
 app.use('/api/credits', creditsRouter);
 app.use('/api/waitlist', waitlistRouter);
 app.use('/api/events', eventsRouter);
+app.use('/api/test-runs', testRunsRouter);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {

@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**441 scenarios**: 372 backend (vitest) + 69 end-to-end (Playwright).
+**447 scenarios**: 378 backend (vitest) + 69 end-to-end (Playwright).
 
 ## The three groups
 
@@ -431,7 +431,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 372 scenarios
+## Backend integration (vitest) — 378 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -472,6 +472,20 @@ against production.
 - records a CTA click with its button, list and campaign
 - drops a CTA name sent with a page view
 - rejects unknown event types, roles and oversized fields
+
+### `src/modules/admin/tests.test.ts`
+
+**GET /api/admin/tests**
+
+- is admins only
+- shows the latest run of each workflow and suite, the runs in range, and what fails most
+
+**POST /api/test-runs — CI uploads a suite result**
+
+- refuses without the CI token, or with the wrong one
+- stores the counts and the names of what failed or flaked
+- a re-sent report for the same run replaces itself; a re-run attempt is a new row
+- rejects malformed input
 
 ### `src/modules/applications/applying.test.ts`
 
