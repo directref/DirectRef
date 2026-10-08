@@ -9,3 +9,4 @@ export { invites } from './invites';
 export { creditPurchases } from './creditPurchases';
 export { waitlistSignups } from './waitlistSignups';
 export { marketingEvents } from './marketingEvents';
+export { testRuns } from './testRuns';

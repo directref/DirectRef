@@ -4,6 +4,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 import * as adminService from './admin.service';
 import { getWaitlistDashboard } from '../waitlist/waitlist.service';
 import { getConversionDashboard } from './conversion.service';
+import { getTestsDashboard } from './tests.service';
 import { requireAuth } from '../../middleware/auth';
 import { AppError } from '../../middleware/errorHandler';
 import { isAdmin } from './admin.access';
@@ -64,6 +65,15 @@ router.get('/conversion', asyncHandler(async (req, res) => {
     return;
   }
   res.json({ data: await getConversionDashboard(parsed.data) });
+}));
+
+router.get('/tests', asyncHandler(async (req, res) => {
+  const parsed = DashboardQuery.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(422).json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.issues[0].message } });
+    return;
+  }
+  res.json({ data: await getTestsDashboard(parsed.data) });
 }));
 
 export default router;

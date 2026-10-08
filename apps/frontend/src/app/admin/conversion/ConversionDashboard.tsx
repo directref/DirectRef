@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api/client';
 import { ROUTES } from '@/lib/constants';
 import { Tile, Table } from '../ui';
-import { MiniBars } from './MiniBars';
+import { MiniBars } from '../MiniBars';
 import type { ConversionDashboardData, DailyMetric } from './types';
 
 const RANGES = [7, 30, 90] as const;

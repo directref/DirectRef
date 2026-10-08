@@ -41,8 +41,16 @@ jobs:
         working-directory: apps/backend
       - run: npm run typecheck
         working-directory: apps/backend
-      - run: npm test
+      - run: npm test -- --reporter=default --reporter=json --outputFile.json=vitest-results.json
         working-directory: apps/backend
+
+      # Counts for the Tests dashboard (/admin/tests). Never fails the job.
+      - name: Report results
+        if: always()
+        env:
+          TEST_REPORT_TOKEN: ${{ secrets.TEST_REPORT_TOKEN }}
+          REPORT_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/report-test-results.mjs --suite backend --file apps/backend/vitest-results.json
 
   e2e:
     name: Full E2E suite
@@ -98,6 +106,14 @@ jobs:
           name: nightly-playwright-report
           path: e2e/playwright-report/
           retention-days: 30
+
+      # Counts for the Tests dashboard (/admin/tests). Never fails the job.
+      - name: Report results
+        if: always()
+        env:
+          TEST_REPORT_TOKEN: ${{ secrets.TEST_REPORT_TOKEN }}
+          REPORT_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/report-test-results.mjs --suite e2e --file e2e/results.json --scope "${{ inputs.grep }}"
 
   # Publishes the nightly report to GitHub Pages so it can be read without
   # downloading a zip from a workflow run.

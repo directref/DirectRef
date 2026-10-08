@@ -162,7 +162,15 @@ jobs:
       # same DDL production runs.
       - name: Tests
         working-directory: apps/backend
-        run: npm test
+        run: npm test -- --reporter=default --reporter=json --outputFile.json=vitest-results.json
+
+      # Counts for the Tests dashboard (/admin/tests). Never fails the job.
+      - name: Report results
+        if: always()
+        env:
+          TEST_REPORT_TOKEN: ${{ secrets.TEST_REPORT_TOKEN }}
+          REPORT_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/report-test-results.mjs --suite backend --file apps/backend/vitest-results.json
 
   e2e:
     name: End-to-end (${{ needs.changes.outputs.e2e_grep || 'everything' }})
@@ -225,3 +233,11 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report/
           retention-days: 14
+
+      # Counts for the Tests dashboard (/admin/tests). Never fails the job.
+      - name: Report results
+        if: always()
+        env:
+          TEST_REPORT_TOKEN: ${{ secrets.TEST_REPORT_TOKEN }}
+          REPORT_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/report-test-results.mjs --suite e2e --file e2e/results.json --scope "${{ needs.changes.outputs.e2e_grep }}"

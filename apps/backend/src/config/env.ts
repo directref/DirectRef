@@ -51,6 +51,9 @@ const envSchema = z.object({
   // Accounts allowed into /admin (comma-separated, matched against a verified
   // account email). See modules/admin/admin.router.ts.
   ADMIN_EMAILS: z.string().default('shaiatar@gmail.com,anatatar83@gmail.com'),
+  // Shared with GitHub Actions (secret of the same name). CI uses it to post
+  // test results to /api/test-runs for the Tests dashboard. Empty = off.
+  TEST_REPORT_TOKEN: z.string().default(''),
   UPLOADS_DIR: z.string().default('./uploads'),
   MAX_CV_SIZE_MB: z.coerce.number().default(10),
 

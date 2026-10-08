@@ -47,6 +47,10 @@ export default defineConfig({
       // outbound mail is possible even if a mock were missed.
       RESEND_API_KEY: '',
 
+      // Lets the suite exercise POST /api/test-runs (the CI → Tests dashboard
+      // upload). Dummy value; the real one lives in GitHub and Railway.
+      TEST_REPORT_TOKEN: 'test_only_report_token',
+
       // Tests that go through HTTP (src/test/http.ts) upload and register far
       // faster than a person, so the production limits (10 uploads / hour)
       // trip within a file. Relaxed for the suite only, as the Playwright

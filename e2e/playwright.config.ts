@@ -37,8 +37,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
 
+  // results.json is the summary CI uploads to the Tests dashboard
+  // (scripts/report-test-results.mjs).
   reporter: process.env.CI
-    ? [['html', { open: 'never' }], ['github'], ['list']]
+    ? [['html', { open: 'never' }], ['github'], ['list'], ['json', { outputFile: 'results.json' }]]
     : [['html', { open: 'never' }], ['list']],
 
   use: {
