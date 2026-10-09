@@ -83,11 +83,21 @@ test.describe('marketing pages', { tag: ['@marketing', '@smoke', '@readonly'] },
     });
   }
 
-  test('the site is not indexable while the beta is closed', async ({ page }) => {
-    // Decision 2026-09-11: stay noindex until the early beta closes. Losing
-    // this silently would put a half-finished product into Google.
-    await page.goto('/');
-    const robots = await page.locator('meta[name="robots"]').getAttribute('content');
-    expect(robots ?? '').toMatch(/noindex/i);
+  test('search engines can index the public pages but not the app', async ({ page, request }) => {
+    // Decision 2026-10-09: open to search engines. Losing this silently would
+    // drop the site out of Google; widening it would index login redirects.
+    for (const path of ['/', '/our-story', '/terms', '/privacy']) {
+      await page.goto(path);
+      const robots = await page.locator('meta[name="robots"]').getAttribute('content');
+      expect(robots ?? '', `${path} must be indexable`).not.toMatch(/noindex/i);
+    }
+
+    const txt = await (await request.get('/robots.txt')).text();
+    expect(txt).toMatch(/^Allow: \/$/m);
+    expect(txt).not.toMatch(/^Disallow: \/$/m);
+    for (const path of ['/feed', '/jobs', '/admin', '/login', '/api/']) {
+      expect(txt, `${path} should stay out of search`).toContain(`Disallow: ${path}`);
+    }
+    expect(txt).toContain('Sitemap: https://direct-ref.com/sitemap.xml');
   });
 });

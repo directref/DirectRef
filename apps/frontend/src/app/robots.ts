@@ -1,31 +1,50 @@
 import type { MetadataRoute } from 'next';
 
-/** Closed to crawlers for the early beta.
+/** Open to search engines since 9 October 2026.
  *
- *  Two separate gates, and as of 2026-09-20 BOTH are still up:
- *    1. The basic-auth password gate in proxy.ts — the site answers 401 to
- *       anyone without it. It lifts by deleting SITE_PASSWORD in Vercel and
- *       redeploying (the var is read at module load, so a redeploy is
- *       required; Vercel does not redeploy on an env change by itself).
- *    2. This file plus the marketing layout's robots block — no indexing.
+ *  Crawlers may read the public marketing pages (/, /our-story, /terms,
+ *  /privacy — the ones listed in sitemap.ts). Everything behind a login, the
+ *  sign-in flows, the admin dashboards and the API are disallowed: they have
+ *  nothing to index and would only show up as login redirects.
  *
- *  They lift in that order and NOT together: the password goes first so the
- *  beta link works, and indexing stays off until the early beta closes,
- *  because the legal pages, pricing model and flows are still moving and an
- *  indexed snapshot of a half-finished contract is expensive to undo.
+ *  Paired with the marketing layout, which no longer sets `noindex`. Pages
+ *  that must stay out of search results (e.g. /waitlist/unsubscribe) set their
+ *  own `robots: { index: false }` in metadata — that tag only works on a page
+ *  crawlers are allowed to fetch, so do not also disallow those here.
  *
- *  (An earlier version of this comment claimed the password was already off.
- *  It was not — the site was returning 401 the whole time.)
- *
- *  TO GO PUBLIC: swap the rule below back to `allow: '/'` with the app routes
- *  disallowed (git history has the previous version), and remove the `noindex`
- *  robots block in the marketing layout. Do both together — either one alone
- *  leaves the site half-open. */
+ *  KEEP IN SYNC with PROTECTED_PREFIXES / PUBLIC_PATHS in proxy.ts when a new
+ *  app route is added. */
+const PRIVATE_PATHS = [
+  // The logged-in app
+  '/feed',
+  '/jobs',
+  '/applications',
+  '/network',
+  '/notifications',
+  '/settings',
+  '/onboarding',
+  '/credits',
+  '/support',
+  // Sign-in and account flows
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+  '/verify-work-email',
+  '/auth',
+  '/join',
+  // Internal
+  '/admin',
+  '/api/',
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
-      disallow: '/',
+      allow: '/',
+      disallow: PRIVATE_PATHS,
     },
     sitemap: 'https://direct-ref.com/sitemap.xml',
   };

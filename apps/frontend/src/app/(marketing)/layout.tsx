@@ -3,12 +3,11 @@ import { Rubik } from 'next/font/google';
 import { mkt } from './tokens';
 import { WaitlistProvider } from '@/components/marketing/Waitlist';
 
-/** Closed to search engines for the early beta — paired with the blanket
- *  disallow in app/robots.ts. Remove BOTH when going public; either one alone
- *  leaves the site half-open. Child pages set their own title/description and
- *  inherit this robots block. */
+/** Indexable: the marketing pages are what search engines should find (see
+ *  app/robots.ts). Each page sets its own title, description and canonical
+ *  URL; a page that must stay out of search sets its own `robots` metadata. */
 export const metadata: Metadata = {
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 const rubik = Rubik({
