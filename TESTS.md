@@ -171,7 +171,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 - /our-story renders
 - /terms renders
 - /privacy renders
-- the site is not indexable while the beta is closed
+- search engines can index the public pages but not the app
 
 ### Matched to your profile (Suggested for you)
 
