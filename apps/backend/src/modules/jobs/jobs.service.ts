@@ -8,6 +8,7 @@ import { getResponseStatsForReferrers, type ResponseStats } from '../application
 import { spendCredit } from '../credits/credits.service';
 import { createNotification } from '../notifications/notifications.service';
 import { env } from '../../config/env';
+import { isAdmin } from '../admin/admin.access';
 import type { CreateJobDto, UpdateJobDto } from './jobs.schemas';
 
 /** PUBLIC — a small sample of live listings for the marketing home page.
@@ -234,6 +235,38 @@ export async function searchJobs(
 
   const grouped = await groupBySourceUrl(rows);
   return grouped.slice(offset, offset + limit);
+}
+
+export interface BrowseGate {
+  open: boolean;
+  liveCount: number;
+  threshold: number;
+}
+
+/** Is the job board open to this viewer yet?
+ *
+ *  Until there are BROWSE_MIN_JOBS live listings, Browse Jobs and the job
+ *  lists on Home return nothing and the page says roles are still being
+ *  collected — a visitor from a marketing push should not judge the product
+ *  by a board with six roles on it. Counted the way Browse shows them: one
+ *  per listing (postings sharing a sourceUrl are one card), active, and
+ *  never a test account's.
+ *
+ *  Admins always see the board, so it can be checked before it opens.
+ *  A job's own page (/api/jobs/:id) is never gated: a referrer sharing a
+ *  link to their posting is how the first seekers arrive. */
+export async function getBrowseGate(viewer: { email: string; emailVerified: boolean } | undefined): Promise<BrowseGate> {
+  const threshold = env.BROWSE_MIN_JOBS;
+  if (threshold === 0) return { open: true, liveCount: 0, threshold };
+
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(distinct ${jobs.sourceUrl})::int` })
+    .from(jobs)
+    .innerJoin(users, eq(users.id, jobs.referrerId))
+    .where(and(eq(jobs.isActive, true), eq(users.isTestAccount, false)));
+
+  // Admins still get the real count: Browse shows them how far off opening is.
+  return { open: count >= threshold || isAdmin(viewer), liveCount: count, threshold };
 }
 
 /** Job titles don't carry a structured seniority field, so this is matched

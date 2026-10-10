@@ -59,6 +59,10 @@ export default defineConfig({
       RATE_LIMIT_API_MAX: '100000',
       RATE_LIMIT_UPLOAD_MAX: '10000',
       RATE_LIMIT_SCRAPE_MAX: '10000',
+
+      // Every test that searches jobs posts one or two, far below the 50 the
+      // board needs to open. Open here; browseGate.test.ts sets its own.
+      BROWSE_MIN_JOBS: '0',
     },
   },
 });

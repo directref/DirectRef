@@ -3,7 +3,7 @@
 **Generated — do not edit by hand.** Regenerate with `node scripts/test-inventory.mjs`.
 It reads the real suites, so it cannot describe tests that do not exist.
 
-**447 scenarios**: 378 backend (vitest) + 69 end-to-end (Playwright).
+**454 scenarios**: 385 backend (vitest) + 69 end-to-end (Playwright).
 
 ## The three groups
 
@@ -431,7 +431,7 @@ Drives the real frontend against the real backend on a throwaway Postgres.
 
 ---
 
-## Backend integration (vitest) — 378 scenarios
+## Backend integration (vitest) — 385 scenarios
 
 Real Postgres, no browser. Covers everything time-based — the escalation clocks,
 retention and the monthly credit grant — which no browser test can reach,
@@ -647,6 +647,21 @@ against production.
 - Aleksandrina Petrova can create an account
 - two people sharing a first name both get in
 - two people with Hebrew names both get in
+
+### `src/modules/jobs/browseGate.test.ts`
+
+**the job board before it has enough roles**
+
+- Browse returns no jobs and says the board is closed
+- Home's matched and feed lists stay empty too
+- a job's own page still opens, so a shared link works
+- counts listings, not postings: two colleagues on one opening are one role
+- closed postings and test-account postings do not count
+- admins see the jobs anyway
+
+**the job board once it reaches the threshold**
+
+- opens to everyone
 
 ### `src/modules/jobs/postings.test.ts`
 

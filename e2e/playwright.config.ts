@@ -93,6 +93,10 @@ export default defineConfig({
         // posting.spec Autofill test serves its fake job page from 127.0.0.1.
         // Test-only: safeFetch ignores this whenever NODE_ENV is production.
         SCRAPE_ALLOW_PRIVATE_HOSTS: 'true',
+        // The board stays closed in production until 50 roles are live
+        // (jobs.service.ts getBrowseGate). Each test posts its own few roles,
+        // so open it here or Browse shows the "still collecting" screen.
+        BROWSE_MIN_JOBS: '0',
       },
     },
     {
