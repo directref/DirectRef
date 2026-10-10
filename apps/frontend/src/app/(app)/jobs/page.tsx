@@ -3,8 +3,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { useSearchParams } from 'next/navigation';
-import { Search, ChevronDown, AlertTriangle, Star, Check } from 'lucide-react';
-import { jobsApi } from '@/lib/api/jobs';
+import Link from 'next/link';
+import { Search, ChevronDown, AlertTriangle, Star, Check, Hourglass } from 'lucide-react';
+import { jobsApi, type BrowseGate } from '@/lib/api/jobs';
 import { JobCard } from '@/components/job/JobCard';
 import { JobCardSkeleton } from '@/components/ui/Skeleton';
 import { useDebounce } from '@/lib/hooks/useDebounce';
@@ -30,16 +31,50 @@ const MAX_PAGES = 50;
 
 async function fetchAllJobs() {
   const all = [];
+  let gate: BrowseGate | undefined;
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const { data } = await jobsApi.search({ page, limit: PAGE_SIZE });
-    all.push(...data);
-    if (data.length < PAGE_SIZE) break;
+    const res = await jobsApi.search({ page, limit: PAGE_SIZE });
+    gate = res.gate;
+    // A closed board sends no jobs at all; nothing more to page through.
+    if (gate && !gate.open) return { jobs: [], gate };
+    all.push(...res.data);
+    if (res.data.length < PAGE_SIZE) break;
   }
-  return all;
+  return { jobs: all, gate };
 }
 
 function useAllJobs() {
-  return useSWR('jobs/browse/v3', fetchAllJobs, { revalidateOnMount: true });
+  return useSWR('jobs/browse/v4', fetchAllJobs, { revalidateOnMount: true });
+}
+
+/** Shown instead of the board until enough roles are live (see BrowseGate).
+ *  Points anyone who works somewhere hiring at posting a role, which is the
+ *  one thing that gets the board open sooner. */
+function BoardClosed() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <div data-testid="jobs-closed" className="bg-jobs-surface border border-jobs-border rounded-2xl px-6 py-12 sm:px-10 text-center">
+        <Hourglass className="w-7 h-7 mx-auto mb-4 text-gold-400" strokeWidth={1.5} />
+        <h1 className="text-[22px] font-bold text-jobs-ink mb-2 text-balance">We&apos;re still collecting roles</h1>
+        <p className="text-[14.5px] leading-relaxed text-jobs-ink-secondary max-w-md mx-auto">
+          Insiders are posting the roles they can refer into right now. We&apos;ll open the job board once there are
+          enough of them to be worth your time. Check back soon.
+        </p>
+        <div className="mt-8 border-t border-jobs-border pt-7">
+          <p className="text-[14px] font-semibold text-jobs-ink mb-1">Work somewhere that&apos;s hiring?</p>
+          <p className="text-[13.5px] text-jobs-ink-secondary mb-4">
+            Post a role you can refer into. It&apos;ll be on the board the day it opens.
+          </p>
+          <Link
+            href="/jobs/post"
+            className="inline-flex items-center rounded-[10px] bg-gold-300 hover:bg-gold-400 text-[#0A0A0A] text-[13.5px] font-semibold px-5 py-2.5 transition-colors"
+          >
+            Post a job →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Reusable filter group: collapsible header + optional mini-search + checkbox list ──
@@ -150,7 +185,9 @@ export default function JobsPage() {
   }, [searchParams]);
 
   const { user } = useAuth();
-  const { data: rawJobs = [], isLoading, error: jobsError } = useAllJobs();
+  const { data: browse, isLoading, error: jobsError } = useAllJobs();
+  const rawJobs = useMemo(() => browse?.jobs ?? [], [browse]);
+  const gate = browse?.gate;
 
   // Exclude jobs the current user posted themselves — Browse Jobs is for other people's postings
   const allJobs = useMemo(
@@ -234,8 +271,18 @@ export default function JobsPage() {
     setSelectedContact(null); setSelectedContactName(''); setSearch('');
   };
 
+  if (gate && !gate.open) return <BoardClosed />;
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
+      {/* Admins see the board early; remind them everyone else doesn't yet. */}
+      {user?.isAdmin && gate && gate.liveCount < gate.threshold && (
+        <p data-testid="jobs-admin-preview" className="mb-4 rounded-[10px] border border-jobs-border bg-jobs-highlight-wash px-4 py-2.5 text-[13px] text-jobs-ink-secondary">
+          <span className="font-semibold text-jobs-ink">Admin preview.</span>{' '}
+          Hidden from users until {gate.threshold} roles are live ({gate.liveCount} now).
+        </p>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
         <div>

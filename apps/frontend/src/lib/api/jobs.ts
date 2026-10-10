@@ -17,6 +17,15 @@ function toQuery(params?: JobsParams | Record<string, string | number | undefine
   return qs ? `?${qs}` : '';
 }
 
+/** Whether the job board is open yet. Browse and Home's job lists come back
+ *  empty until `liveCount` reaches `threshold` (backend jobs.service.ts
+ *  getBrowseGate). Admins always get `open: true` plus the real count. */
+export interface BrowseGate {
+  open: boolean;
+  liveCount: number;
+  threshold: number;
+}
+
 export const jobsApi = {
   /** Feed: jobs from accepted connections */
   feed: (params?: JobsParams) =>
@@ -24,12 +33,12 @@ export const jobsApi = {
 
   /** Search all active jobs */
   search: (params?: JobsParams) =>
-    api.get<{ data: JobWithReferrer[] }>(`/api/jobs${toQuery(params)}`),
+    api.get<{ data: JobWithReferrer[]; gate?: BrowseGate }>(`/api/jobs${toQuery(params)}`),
 
   /** Jobs matching the seeker's saved profile preferences (desired role,
    *  location, employment type, seniority) */
   suggested: (limit?: number) =>
-    api.get<{ data: JobWithReferrer[] }>(`/api/jobs/suggested${toQuery({ limit })}`),
+    api.get<{ data: JobWithReferrer[]; gate?: BrowseGate }>(`/api/jobs/suggested${toQuery({ limit })}`),
 
   /** Referrer's own posted jobs */
   mine: (params?: Pick<JobsParams, 'page' | 'limit'>) =>

@@ -23,6 +23,8 @@ export const createJob = asyncHandler(async (req: Request, res: Response) => {
 
 export const getFeed = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit } = parsePagination(req);
+  const gate = await jobsService.getBrowseGate(req.user);
+  if (!gate.open) return void res.json({ data: [], total: 0, gate });
   const result = await jobsService.getJobFeed(req.user!.id, page, limit);
   res.json(result);
 });
@@ -31,12 +33,17 @@ export const searchJobs = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit } = parsePagination(req);
   const q = req.query.q as string | undefined;
   const company = req.query.company as string | undefined;
+  // Closed board: say so, rather than an empty list that reads as "no jobs".
+  const gate = await jobsService.getBrowseGate(req.user);
+  if (!gate.open) return void res.json({ data: [], gate });
   const jobs = await jobsService.searchJobs(q, company, page, limit);
-  res.json({ data: jobs });
+  res.json({ data: jobs, gate });
 });
 
 export const getSuggestedJobs = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(Number(req.query.limit) || 6, 24);
+  const gate = await jobsService.getBrowseGate(req.user);
+  if (!gate.open) return void res.json({ data: [], gate });
   const jobs = await jobsService.getSuggestedJobs(req.user!.id, limit);
   res.json({ data: jobs });
 });

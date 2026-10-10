@@ -93,10 +93,14 @@ export default function FeedClient({ initialJobs }: { initialJobs: JobWithReferr
   // Matched jobs — filtered against every preference the seeker has set
   // (desired role, location, employment type, seniority), not just role.
   const hasPrefs = !!(user?.desiredRole || user?.preferredLocation || user?.employmentType || user?.seniority);
-  const { data: matchedJobs } = useSWR(
+  const { data: matched } = useSWR(
     hasPrefs ? ['feed/matched', user?.desiredRole, user?.preferredLocation, user?.employmentType, user?.seniority] : null,
-    () => jobsApi.suggested(5).then(r => r.data),
+    () => jobsApi.suggested(5),
   );
+  const matchedJobs = matched?.data;
+  // Board not open yet (jobs.service.ts getBrowseGate): no matches is expected,
+  // not a sign the seeker's preferences are too narrow.
+  const boardClosed = matched?.gate?.open === false;
 
   // Most recently posted jobs, platform-wide — shown to every user regardless
   // of role, but never your own postings, same as Browse Jobs excludes them
@@ -336,10 +340,16 @@ export default function FeedClient({ initialJobs }: { initialJobs: JobWithReferr
               ) : matchedJobs.length === 0 ? (
                 <div style={{ background: '#fff', border: '1px solid oklch(0.93 0.004 70)', borderRadius: 16, padding: '24px 22px' }}>
                   <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px' }}>No matches yet</p>
-                  <p style={{ fontSize: 13, color: 'oklch(0.62 0.008 60)', margin: 0 }}>
-                    No active jobs match your preferences right now.{' '}
-                    <Link href="/jobs" style={{ color: 'oklch(0.72 0.13 85)', fontWeight: 600, textDecoration: 'none' }}>Browse all jobs →</Link>
-                  </p>
+                  {boardClosed ? (
+                    <p style={{ fontSize: 13, color: 'oklch(0.62 0.008 60)', margin: 0 }}>
+                      We&apos;re still collecting roles. Matches will show up here once the job board opens.
+                    </p>
+                  ) : (
+                    <p style={{ fontSize: 13, color: 'oklch(0.62 0.008 60)', margin: 0 }}>
+                      No active jobs match your preferences right now.{' '}
+                      <Link href="/jobs" style={{ color: 'oklch(0.72 0.13 85)', fontWeight: 600, textDecoration: 'none' }}>Browse all jobs →</Link>
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>

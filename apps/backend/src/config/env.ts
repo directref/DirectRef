@@ -48,6 +48,12 @@ const envSchema = z.object({
   RATE_LIMIT_WAITLIST_MAX: z.coerce.number().default(10),
   RATE_LIMIT_EVENTS_MAX: z.coerce.number().default(200),
 
+  // Browse Jobs (and the job lists on Home) stay closed until at least this
+  // many live listings exist, so early visitors from marketing don't land on
+  // a near-empty board. Admins always see the jobs. 0 = always open. See
+  // jobs.service.ts getBrowseGate.
+  BROWSE_MIN_JOBS: z.coerce.number().int().min(0).default(50),
+
   // Accounts allowed into /admin (comma-separated, matched against a verified
   // account email). See modules/admin/admin.router.ts.
   ADMIN_EMAILS: z.string().default('shaiatar@gmail.com,anatatar83@gmail.com'),
